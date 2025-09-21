@@ -1,22 +1,51 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NavigationContainer } from '@react-navigation/native';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
+import { Home, Cloud, AlertTriangle, User } from "lucide-react-native";
 
-// Import your screens
-import LandingScreen from '../screens/LandingScreen';
-import HomeScreen from '../screens/HomeScreen.js'; 
+// Screens
+import LandingScreen from "../screens/LandingScreen";
+import HomeScreen from "../screens/HomeScreen";
+import WeatherForecastScreen from "../screens/WeatherForecastScreen";
+import RiskScreen from "../screens/RiskScreen";
+import ProfileScreen from "../screens/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
+// Bottom Tabs
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: "#004675", // regalBlue
+        tabBarInactiveTintColor: "#548C92", // seaGreen
+        tabBarStyle: { backgroundColor: "#E0D7CF" }, // lightPeach
+        tabBarIcon: ({ color, size }) => {
+          if (route.name === "Home") return <Home color={color} size={size} />;
+          if (route.name === "Weather") return <Cloud color={color} size={size} />;
+          if (route.name === "Risk") return <AlertTriangle color={color} size={size} />;
+          if (route.name === "Profile") return <User color={color} size={size} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Weather" component={WeatherForecastScreen} />
+      <Tab.Screen name="Risk" component={RiskScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+}
+
+// Stack Navigator (Landing → Main Tabs)
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Landing"
-        screenOptions={{ headerShown: false }}
-      >
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Landing" component={LandingScreen} />
-        <Stack.Screen name="Dashboard" component={HomeScreen} />
+        <Stack.Screen name="MainTabs" component={MainTabs} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -90,7 +90,7 @@ const licenseMeta = {
 
 }
 
-exports.viewAllBoats = async(req,res)=>{
+exports.viewAllBoatRequests = async(req,res)=>{
 
     try{
 
@@ -103,4 +103,71 @@ exports.viewAllBoats = async(req,res)=>{
         res.status(500).json({message : "Internal Server Error"});
     }
 }
+
+
+exports.statusBasedBoatRegRequests = async(req,res)=>{
+
+  try{
+
+    const {status} = req.query;
+    const filter = {};
+    if(status) filter.status = status;
+
+    const requests = await Boat.find(filter);
+    if(!requests) res.status(404).json({message : "No Available Requests Found"});
+    res.status(200).json(requests);
+
+  }catch(err){
+
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+
+  }
+}
+
+
+exports.updateBoatRequests = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Find the boat by ID
+    const boat = await Boat.findById(id);
+    if (!boat) {
+      return res.status(404).json({ message: "Boat not found" });
+    }
+
+    // Update only the status
+    boat.status = req.body.status;
+
+    // Save changes
+    const updatedBoat = await boat.save();
+
+    res.status(200).json({
+      message: "Boat status updated successfully",
+      boat: updatedBoat
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error occurred" });
+  }
+};
+
+
+exports.viewAllBoatRequestsByFisherman = async (req, res) => {
+  try {
+    const fishermanId = req.params.id;
+
+    const BoatRegRequests = await Boat.find({ fishermanId: fishermanId });
+
+    if (BoatRegRequests.length === 0) {
+      return res.status(404).json({ message: "No Boat Registration Requests Found" });
+    }
+
+    return res.status(200).json(BoatRegRequests);
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error occurred" });
+  }
+};
 

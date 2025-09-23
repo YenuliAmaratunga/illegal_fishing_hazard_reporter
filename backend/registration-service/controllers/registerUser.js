@@ -125,3 +125,18 @@ exports.updateStatus = async (req, res) => {
   }
 };
 
+exports.viewCurrentUsers = async(req,res) =>{
+
+  try{
+
+    const currentUsers = await User.find({status : "approved"});
+    if(!currentUsers) res.status(404).json({message : "No Users Found"});
+    res.status(202).json(currentUsers);
+
+  }catch(err){
+
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+
+  }
+}

@@ -45,7 +45,9 @@ const BoatSchema = new mongoose.Schema({
     secure_url: { type: String, required: true },
     format: { type: String },
     uploadedAt: { type: Date, default: Date.now },
-  }
+  },
+
+  status : {type : String, enum : ['pending', 'approved', 'rejected'], default : 'pending'}
 
 
 

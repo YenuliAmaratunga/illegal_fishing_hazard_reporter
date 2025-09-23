@@ -9,6 +9,7 @@ router.get('/retrieveUsers',authMiddleware,authorizeRoles("admin"), UserControll
 router.get('/retrieveRequests',authMiddleware,authorizeRoles("admin"), UserController.statusBasedRequests);
 router.put('/updateRequest/:id',authMiddleware,authorizeRoles("admin"),UserController.updateStatus);
 router.post('/login',loginUserController.login);
+router.get('/viewCurrentUsers',authMiddleware,authorizeRoles("admin"),UserController.viewCurrentUsers);
 
 
 

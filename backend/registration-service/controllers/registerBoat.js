@@ -31,7 +31,7 @@ if (!licenseFile) {
 
 // 2) Upload license to Cloudinary
 const licResult = await uploadBufferToCloudinary(licenseFile.buffer, {
-  folder: `boats/68d148cceaaa3f988ffe54e1/license`,
+  folder: `boats/${req.user.id}/license`,
   resource_type: 'auto' // handles pdf/images
 });
 
@@ -45,7 +45,7 @@ const licenseMeta = {
     // 2) Upload images (parallel)
     const imageUploadPromises = imageFiles.map(file =>
       uploadBufferToCloudinary(file.buffer, {
-        folder: `boats/68d148cceaaa3f988ffe54e1/images`,
+        folder: `boats/${req.user.id}/images`,
         resource_type: 'image',
         // transformation: [{ width: 1600, crop: 'limit' }]
       })
@@ -63,7 +63,7 @@ const licenseMeta = {
     }));
 
       const newBoat = new Boat({
-      fishermanId: '68d148cceaaa3f988ffe54e1',
+      fishermanId: req.user.id,
       boatName,
       registrationNumber,
       boatType,

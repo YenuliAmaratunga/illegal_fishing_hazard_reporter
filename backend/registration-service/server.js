@@ -11,7 +11,7 @@ require('dotenv').config();
 const userRoutes = require('./routes/userRoutes');
 const boatRoutes = require('./routes/boatRoutes');
 
-
+app.use(cors());
 app.use(express.json());
 // app.use(fileUpload());
 
@@ -30,4 +30,5 @@ app.listen(PORT,()=>{
 
     console.log(`App is running on the port ${PORT}`); 
 })
+
 

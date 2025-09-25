@@ -21,6 +21,26 @@ export const fetchWeatherData = async (lat, lon) => {
   }
 };
 
+// Fetch extended forecast (OpenWeather One Call API)
+export const fetchExtendedForecast = async (lat, lon) => {
+  try {
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&appid=${apiKey}&units=metric`;
+
+    const response = await axios.get(url);
+    return {
+      source: "OpenWeather",
+      current: response.data.current,
+      hourly: response.data.hourly,
+      daily: response.data.daily,
+    };
+  } catch (err) {
+    console.error("OpenWeather OneCall error:", err.message);
+    return { source: "OpenWeather", error: err.message };
+  }
+};
+
+
 // Fetch marine data: waves, tides, currents (StormGlass)
 export const fetchStormGlassData = async (lat, lon) => {
   try {

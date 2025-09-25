@@ -7,7 +7,7 @@ const {
   RADIO_COMM_REQUIRED,
   WEATHER_CHECK_REQUIRED,
   MIN_FUEL_BUFFER_PERCENTAGE,
-} = require('./riskConfig');
+} = require('../riskConfig');
 
 // Validation function
 function validateChecklist(data) {
@@ -66,6 +66,78 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// Function to test validateChecklist() using hardcoded data
+function testValidateChecklist() {
+  const dummyChecklists = [
+    {
+      boatAge: 8,
+      fuelAmount: 60,
+      fuelEfficiency: 3.5,
+      crewCount: 4,
+      lifeJacketsCount: 4,
+      engineStatus: 'Good',
+      hasRadioCommunication: true,
+      weatherCheckCompleted: true,
+      startingCoords: { latitude: 37.7749, longitude: -122.4194 }, // SF
+      destinationCoords: { latitude: 37.8044, longitude: -122.2711 }, // Oakland
+    },
+    {
+      boatAge: 16, // too old
+      fuelAmount: 60,
+      fuelEfficiency: 3.5,
+      crewCount: 4,
+      lifeJacketsCount: 4,
+      engineStatus: 'Good',
+      hasRadioCommunication: true,
+      weatherCheckCompleted: true,
+      startingCoords: { latitude: 37.7749, longitude: -122.4194 },
+      destinationCoords: { latitude: 34.0522, longitude: -118.2437 },
+    },
+    {
+      boatAge: 5,
+      fuelAmount: 15, // too little fuel
+      fuelEfficiency: 3.5,
+      crewCount: 4,
+      lifeJacketsCount: 4,
+      engineStatus: 'Good',
+      hasRadioCommunication: true,
+      weatherCheckCompleted: true,
+      startingCoords: { latitude: 37.7749, longitude: -122.4194 },
+      destinationCoords: { latitude: 34.0522, longitude: -118.2437 },
+    },
+    {
+      boatAge: 5,
+      fuelAmount: 60,
+      fuelEfficiency: 3.5,
+      crewCount: 4,
+      lifeJacketsCount: 3, // not enough life jackets
+      engineStatus: 'Good',
+      hasRadioCommunication: true,
+      weatherCheckCompleted: true,
+      startingCoords: { latitude: 37.7749, longitude: -122.4194 },
+      destinationCoords: { latitude: 34.0522, longitude: -118.2437 },
+    },
+    {
+      boatAge: 5,
+      fuelAmount: 60,
+      fuelEfficiency: 3.5,
+      crewCount: 4,
+      lifeJacketsCount: 4,
+      engineStatus: 'Critical', // critical engine
+      hasRadioCommunication: true,
+      weatherCheckCompleted: true,
+      startingCoords: { latitude: 37.7749, longitude: -122.4194 },
+      destinationCoords: { latitude: 34.0522, longitude: -118.2437 },
+    },
+  ];
+
+  dummyChecklists.forEach((checklist, idx) => {
+    const isValid = validateChecklist(checklist);
+    console.log(`Test Case ${idx + 1}: ${isValid ? 'PASS ✅' : 'FAIL ❌'}`);
+  });
+}
+
+
 module.exports = {
-  validateChecklist,
+  validateChecklist, testValidateChecklist,
 };

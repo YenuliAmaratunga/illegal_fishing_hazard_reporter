@@ -111,7 +111,7 @@ export default function RoleRegisterScreen() {
         });
       }
 
-      const res = await axios.post("http://localhost:8080/api/User/registerUser", payload);
+      const res = await axios.post("http://192.168.8.121:8080/api/User/registerUser", payload);
 
       console.log("Response ✅:", res.data);
       Alert.alert("Success", res.data.message);

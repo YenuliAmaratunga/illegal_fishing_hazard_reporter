@@ -35,46 +35,63 @@ export default function RoleLoginScreen() {
     }
 
     try {
-      const res = await axios.post("http://localhost:8080/api/User/login", {
+      const res = await axios.post("http://192.168.8.121:8080/api/User/login", {
         phone,
         password,
         role,
       });
 
-      if (res.data.success) {
-        Alert.alert("Success", "Login successful");
-        console.log(res.data.message);
-        
-      } else {
-        Alert.alert("Error", res.data.message || "Login failed");
-      }
+    console.log("Full response:", res.data);
+
+  const { token, message } = res.data;
+
+  if (token) {
+    Alert.alert("Success", message || "Login successful");
+    console.log("JWT Token:", token);
+  } else {
+    Alert.alert("Error", message || "Login failed");
+  }
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Something went wrong");
     }
   };
 
+  
   return (
-    <View>
-      <Text>{translations[language].phoneEntry}</Text>
-      <TextInput
-        value={phone}
-        onChangeText={setPhone}
-        keyboardType="phone-pad"
-        placeholder={translations[language].phoneEntry}
-      />
+    <View className="flex-1 justify-center items-center bg-gray-100">
+      <View className="w-11/12 bg-white p-6 rounded-2xl shadow-lg">
+        <Text className="text-lg font-semibold mb-2 text-gray-700">
+          {translations[language].phoneEntry}
+        </Text>
+        <TextInput
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          placeholder={translations[language].phoneEntry}
+          className="border border-gray-300 rounded-lg px-3 py-2 mb-4"
+        />
 
-      <Text>{translations[language].passwordEntry}</Text>
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        placeholder={translations[language].passwordEntry}
-      />
+        <Text className="text-lg font-semibold mb-2 text-gray-700">
+          {translations[language].passwordEntry}
+        </Text>
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          placeholder={translations[language].passwordEntry}
+          className="border border-gray-300 rounded-lg px-3 py-2 mb-6"
+        />
 
-      <TouchableOpacity onPress={handleSubmit}>
-        <Text>{translations[language].login}</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleSubmit}
+          className="bg-blue-600 py-3 rounded-xl"
+        >
+          <Text className="text-white text-center font-bold text-lg">
+            {translations[language].login}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

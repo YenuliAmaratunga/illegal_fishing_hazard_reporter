@@ -6,8 +6,8 @@ const jwt = require('jsonwebtoken');
 exports.login = async (req, res) => {
   try {
     const { phone, password } = req.body;
-    // console.log(phone);
-    // console.log(password);
+    console.log(phone);
+    console.log(password);
 
     if (!phone || !password) {
       return res.status(400).json({ message: "Phone and password are required" });
@@ -38,7 +38,7 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // console.log(token);
+    console.log(token);
 
     return res.status(200).json({
       message: "Login successful",

@@ -10,6 +10,9 @@ import HomeScreen from "../screens/HomeScreen";
 import WeatherForecastScreen from "../screens/WeatherForecastScreen";
 import RiskScreen from "../screens/RiskScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import GPSTrackingScreen from "../screens/GPSTrackingScreen";
+import ReportViolationScreen from "../screens/ReportViolationScreen";
+import ReportHazardScreen from "../screens/ReportHazardScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -46,6 +49,9 @@ export default function AppNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Landing" component={LandingScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
+        <Stack.Screen name="GPSTracking" component={GPSTrackingScreen} />
+        <Stack.Screen name="ReportViolation" component={ReportViolationScreen} />
+        <Stack.Screen name="ReportHazard" component={ReportHazardScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

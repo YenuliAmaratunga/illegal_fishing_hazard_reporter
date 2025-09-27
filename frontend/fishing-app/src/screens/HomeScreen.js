@@ -2,24 +2,15 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ImageBackground } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
-const cards = [
-  { id: 1, title: "🐟 Registration & QR", bg: "bg-lightGreen" },
-  { id: 2, title: "⚠️ Safety Checklist", bg: "bg-lightPeach", screen: "Risk" },
-  { id: 3, title: "🌦️ Weather Forecast", bg: "bg-regalBlue" },
-  { id: 4, title: "📍 Live GPS Tracking", bg: "bg-seaGreen", screen: "GPSTracking" },
-  { id: 5, title: "🚨 Report Violation", bg: "bg-darkBlue", screen: "ReportViolation" }, 
-  { id: 6, title: "⚠️ Report Hazard", bg: "bg-beige", screen: "ReportHazard" }, 
-];
-
-export default function HomeScreen() {
-  const navigation = useNavigation();
-// Card data in multiple languages
 const cardData = {
   en: [
     { id: 1, title: "🐟 Registration & QR", bg: "bg-lightGreen" },
     { id: 2, title: "⚠️ Safety & Risk", bg: "bg-lightPeach", screen: "Risk" },
     { id: 3, title: "🌦️ Weather Forecast", bg: "bg-regalBlue", screen: "Weather" },
-    { id: 4, title: "📍 GPS & Tracking", bg: "bg-seaGreen"},
+    { id: 4, title: "📍Live GPS & Tracking", bg: "bg-seaGreen" },
+    { id: 5, title: "🚨 Report Violation", bg: "bg-darkBlue", screen: "ReportViolation" }, 
+    { id: 6, title: "⚠️ Report Hazard", bg: "bg-beige", screen: "ReportHazard" },
+   
   ],
   si: [
     { id: 1, title: "🐟 ලියාපදිංචි කිරීම & QR", bg: "bg-lightGreen" },
@@ -52,10 +43,11 @@ export default function HomeScreen() {
       resizeMode="cover"
     >
       {/* Header */}
-
       <Text className="text-2xl font-bold text-darkBlue">
         {labels[language].dashboard}
       </Text>
+
+      {/* Auth buttons */}
       <View className="flex-row justify-end space-x-2 mb-6">
         <TouchableOpacity
           onPress={() => navigation.navigate("Register", { language })}
@@ -76,8 +68,9 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Language Selector */}
+      {/* Language selector */}
       <View className="flex-row justify-center mb-4">
+        {/* EN button */}
         <TouchableOpacity
           onPress={() => setLanguage("en")}
           className={`px-4 py-2 rounded-l-lg border ${
@@ -88,6 +81,7 @@ export default function HomeScreen() {
             EN
           </Text>
         </TouchableOpacity>
+        {/* SI button */}
         <TouchableOpacity
           onPress={() => setLanguage("si")}
           className={`px-4 py-2 border ${
@@ -98,6 +92,7 @@ export default function HomeScreen() {
             SI
           </Text>
         </TouchableOpacity>
+        {/* TA button */}
         <TouchableOpacity
           onPress={() => setLanguage("ta")}
           className={`px-4 py-2 rounded-r-lg border ${
@@ -110,7 +105,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Grid of Cards */}
+      {/* Grid of cards */}
       <View className="flex-row flex-wrap justify-between">
         {cardData[language].map((card) => (
           <TouchableOpacity
@@ -127,7 +122,6 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         ))}
-
       </View>
     </ImageBackground>
   );

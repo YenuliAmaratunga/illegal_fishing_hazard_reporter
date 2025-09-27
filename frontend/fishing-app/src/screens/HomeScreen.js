@@ -2,6 +2,17 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ImageBackground } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
+const cards = [
+  { id: 1, title: "🐟 Registration & QR", bg: "bg-lightGreen" },
+  { id: 2, title: "⚠️ Safety Checklist", bg: "bg-lightPeach", screen: "Risk" },
+  { id: 3, title: "🌦️ Weather Forecast", bg: "bg-regalBlue" },
+  { id: 4, title: "📍 Live GPS Tracking", bg: "bg-seaGreen", screen: "GPSTracking" },
+  { id: 5, title: "🚨 Report Violation", bg: "bg-darkBlue", screen: "ReportViolation" }, 
+  { id: 6, title: "⚠️ Report Hazard", bg: "bg-beige", screen: "ReportHazard" }, 
+];
+
+export default function HomeScreen() {
+  const navigation = useNavigation();
 // Card data in multiple languages
 const cardData = {
   en: [
@@ -116,6 +127,7 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         ))}
+
       </View>
     </ImageBackground>
   );

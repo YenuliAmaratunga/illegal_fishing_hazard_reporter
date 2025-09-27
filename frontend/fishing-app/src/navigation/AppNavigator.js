@@ -10,6 +10,9 @@ import HomeScreen from "../screens/HomeScreen";
 import WeatherForecastScreen from "../screens/WeatherForecastScreen";
 import RiskScreen from "../screens/RiskScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import GPSTrackingScreen from "../screens/GPSTrackingScreen";
+import ReportViolationScreen from "../screens/ReportViolationScreen";
+import ReportHazardScreen from "../screens/ReportHazardScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import RoleRegisterScreen from "../screens/RoleRegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
@@ -56,6 +59,9 @@ export default function AppNavigator() {
         <Stack.Screen name = "RoleLogin" component={RoleLoginScreen}/>
         <Stack.Screen name="WeatherForecastScreen" component={WeatherForecastScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
+        <Stack.Screen name="GPSTracking" component={GPSTrackingScreen} />
+        <Stack.Screen name="ReportViolation" component={ReportViolationScreen} />
+        <Stack.Screen name="ReportHazard" component={ReportHazardScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -6,9 +6,9 @@ import { useNavigation } from "@react-navigation/native";
 const cardData = {
   en: [
     { id: 1, title: "🐟 Registration & QR", bg: "bg-lightGreen" },
-    { id: 2, title: "⚠️ Safety & Risk", bg: "bg-lightPeach" },
-    { id: 3, title: "🌦️ Weather Forecast", bg: "bg-regalBlue" },
-    { id: 4, title: "📍 GPS & Tracking", bg: "bg-seaGreen" },
+    { id: 2, title: "⚠️ Safety & Risk", bg: "bg-lightPeach", screen: "Risk" },
+    { id: 3, title: "🌦️ Weather Forecast", bg: "bg-regalBlue", screen: "Weather" },
+    { id: 4, title: "📍 GPS & Tracking", bg: "bg-seaGreen"},
   ],
   si: [
     { id: 1, title: "🐟 ලියාපදිංචි කිරීම & QR", bg: "bg-lightGreen" },
@@ -42,29 +42,28 @@ export default function HomeScreen() {
     >
       {/* Header */}
 
-<Text className="text-2xl font-bold text-darkBlue">{labels[language].dashboard}</Text>
-<View className="flex-row justify-end space-x-2 mb-6">
-  <TouchableOpacity
-    onPress={() => navigation.navigate("Register", { language })}
-    className="bg-regalBlue px-3 py-1.5 rounded-lg"
-  >
-    <Text className="text-white font-semibold text-sm">
-      {labels[language].register}
-    </Text>
-  </TouchableOpacity>
+      <Text className="text-2xl font-bold text-darkBlue">
+        {labels[language].dashboard}
+      </Text>
+      <View className="flex-row justify-end space-x-2 mb-6">
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Register", { language })}
+          className="bg-regalBlue px-3 py-1.5 rounded-lg"
+        >
+          <Text className="text-white font-semibold text-sm">
+            {labels[language].register}
+          </Text>
+        </TouchableOpacity>
 
-  <TouchableOpacity
-    onPress={() => navigation.navigate("Login", { language })}
-    className="bg-regalBlue px-3 py-1.5 rounded-lg"
-  >
-    <Text className="text-white font-semibold text-sm">
-      {labels[language].login}
-    </Text>
-  </TouchableOpacity>
-</View>
-
-
-
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Login", { language })}
+          className="bg-regalBlue px-3 py-1.5 rounded-lg"
+        >
+          <Text className="text-white font-semibold text-sm">
+            {labels[language].login}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Language Selector */}
       <View className="flex-row justify-center mb-4">
@@ -74,7 +73,9 @@ export default function HomeScreen() {
             language === "en" ? "bg-regalBlue" : "bg-white"
           }`}
         >
-          <Text className={language === "en" ? "text-white" : "text-black"}>EN</Text>
+          <Text className={language === "en" ? "text-white" : "text-black"}>
+            EN
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setLanguage("si")}
@@ -82,7 +83,9 @@ export default function HomeScreen() {
             language === "si" ? "bg-regalBlue" : "bg-white"
           }`}
         >
-          <Text className={language === "si" ? "text-white" : "text-black"}>SI</Text>
+          <Text className={language === "si" ? "text-white" : "text-black"}>
+            SI
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setLanguage("ta")}
@@ -90,7 +93,9 @@ export default function HomeScreen() {
             language === "ta" ? "bg-regalBlue" : "bg-white"
           }`}
         >
-          <Text className={language === "ta" ? "text-white" : "text-black"}>TA</Text>
+          <Text className={language === "ta" ? "text-white" : "text-black"}>
+            TA
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -100,6 +105,11 @@ export default function HomeScreen() {
           <TouchableOpacity
             key={card.id}
             className={`w-[48%] h-32 mb-4 rounded-2xl ${card.bg} items-center justify-center`}
+            onPress={() => {
+              if (card.screen) {
+                navigation.navigate(card.screen);
+              }
+            }}
           >
             <Text className="text-lg font-semibold text-white text-center">
               {card.title}

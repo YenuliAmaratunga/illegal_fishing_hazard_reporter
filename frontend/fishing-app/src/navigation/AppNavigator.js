@@ -54,6 +54,7 @@ export default function AppNavigator() {
         <Stack.Screen name = "RoleRegister" component={RoleRegisterScreen}/>
         <Stack.Screen name = "Login" component = {LoginScreen}/>
         <Stack.Screen name = "RoleLogin" component={RoleLoginScreen}/>
+        <Stack.Screen name="WeatherForecastScreen" component={WeatherForecastScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
       </Stack.Navigator>
     </NavigationContainer>

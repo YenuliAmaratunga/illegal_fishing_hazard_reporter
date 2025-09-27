@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   language : {type : String, enum : ['Sinhala', 'Tamil', 'English'], required : true},
   
   // Fisherman-specific
-  nationalId: {type : String , unique : true},
+  nationalId: {type : String},
   boatName: {type :String},
   dob : {type : Date},
   age : {type : Number},

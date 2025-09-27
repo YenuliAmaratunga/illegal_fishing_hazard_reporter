@@ -10,6 +10,10 @@ import HomeScreen from "../screens/HomeScreen";
 import WeatherForecastScreen from "../screens/WeatherForecastScreen";
 import RiskScreen from "../screens/RiskScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import RegisterScreen from "../screens/RegisterScreen";
+import RoleRegisterScreen from "../screens/RoleRegisterScreen";
+import LoginScreen from "../screens/LoginScreen";
+import RoleLoginScreen from "../screens/RoleLoginScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -35,6 +39,7 @@ function MainTabs() {
       <Tab.Screen name="Weather" component={WeatherForecastScreen} />
       <Tab.Screen name="Risk" component={RiskScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
+  
     </Tab.Navigator>
   );
 }
@@ -45,6 +50,10 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Landing" component={LandingScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name = "RoleRegister" component={RoleRegisterScreen}/>
+        <Stack.Screen name = "Login" component = {LoginScreen}/>
+        <Stack.Screen name = "RoleLogin" component={RoleLoginScreen}/>
         <Stack.Screen name="MainTabs" component={MainTabs} />
       </Stack.Navigator>
     </NavigationContainer>

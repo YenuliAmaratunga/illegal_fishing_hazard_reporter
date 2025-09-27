@@ -14,6 +14,7 @@ import RegisterScreen from "../screens/RegisterScreen";
 import RoleRegisterScreen from "../screens/RoleRegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RoleLoginScreen from "../screens/RoleLoginScreen";
+import FishermanLandingScreen from "../screens/FishermanLandingScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -54,7 +55,9 @@ export default function AppNavigator() {
         <Stack.Screen name = "RoleRegister" component={RoleRegisterScreen}/>
         <Stack.Screen name = "Login" component = {LoginScreen}/>
         <Stack.Screen name = "RoleLogin" component={RoleLoginScreen}/>
+        <Stack.Screen name = "Fisherman" component={FishermanLandingScreen}/>
         <Stack.Screen name="MainTabs" component={MainTabs} />
+       
       </Stack.Navigator>
     </NavigationContainer>
   );

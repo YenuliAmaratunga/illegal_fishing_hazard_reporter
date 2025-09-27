@@ -1,4 +1,4 @@
-// External API calls (OpenWeatherMap, StormGlass, WorldTides)
+// External API calls (OpenWeatherMap, Open Meteo, WorldTides)
 import axios from "axios";
 
 // Fetch current weather data (OpenWeather)

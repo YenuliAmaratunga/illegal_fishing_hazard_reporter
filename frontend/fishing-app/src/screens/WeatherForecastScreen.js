@@ -8,7 +8,6 @@ import {
   ImageBackground,
 } from "react-native";
 import axios from "axios";
-import { baseURL } from "../config/api";
 import * as Location from "expo-location";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -32,7 +31,7 @@ export default function WeatherForecastScreen() {
         const { latitude, longitude } = location.coords;
 
         const res = await axios.get(
-          `${baseURL}/api/weather/forecast?lat=${latitude}&lon=${longitude}`
+          `https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/weather-service/v1.0/api/weather/forecast?lat=${latitude}&lon=${longitude}`
         );
 
         if (res.data.success) setWeather(res.data.data);

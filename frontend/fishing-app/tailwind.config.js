@@ -5,12 +5,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        regalBlue: "#004675", //Onboarding Screen Background
-        darkBlue:"#285260", //Primary Header Colour
-        seaGreen:"#548C92", //Secondary Text Colour 
-        lightGreen: "#B4D7D8", //Button Colour
-        lightPeach: "#E0D7CF", //Secondary Button Colour
-        beige : "#AB9072" //Accent Colour
+        blue: "#3C467B", //important text
+        blueLight: "#50589C", //tab chosen button colour
+        darkPurple: "#636CCB", //accent colour
+        lightPurple: "#6E8CFB" //button bg colour
+
       },
       fontFamily: {
         poppins: "Poppins-Regular",

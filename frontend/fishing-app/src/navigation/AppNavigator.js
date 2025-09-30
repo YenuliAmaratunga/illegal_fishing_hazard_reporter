@@ -2,7 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
-import { Home, Cloud, AlertTriangle, User } from "lucide-react-native";
+import { Home, Cloud, AlertTriangle, Locate } from "lucide-react-native";
 
 // Screens
 import LandingScreen from "../screens/LandingScreen";
@@ -34,14 +34,14 @@ function MainTabs() {
           if (route.name === "Home") return <Home color={color} size={size} />;
           if (route.name === "Weather") return <Cloud color={color} size={size} />;
           if (route.name === "Risk") return <AlertTriangle color={color} size={size} />;
-          if (route.name === "Profile") return <User color={color} size={size} />;
+          if (route.name === "GPS") return <Locate color={color} size={size} />;
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Weather" component={WeatherForecastScreen} />
       <Tab.Screen name="Risk" component={RiskScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="GPS" component={GPSTrackingScreen} />
   
     </Tab.Navigator>
   );

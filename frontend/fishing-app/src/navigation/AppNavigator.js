@@ -24,9 +24,9 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#004675", // regalBlue
-        tabBarInactiveTintColor: "#548C92", // seaGreen
-        tabBarStyle: { backgroundColor: "#E0D7CF" }, // lightPeach
+        tabBarActiveTintColor: "#50589C", 
+        tabBarInactiveTintColor: "#949494", 
+        tabBarStyle: { backgroundColor: "#ffffff" }, 
         tabBarIcon: ({ color, size }) => {
           if (route.name === "Home") return <Home color={color} size={size} />;
           if (route.name === "Weather") return <Cloud color={color} size={size} />;

@@ -17,6 +17,7 @@ import RegisterScreen from "../screens/RegisterScreen";
 import RoleRegisterScreen from "../screens/RoleRegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RoleLoginScreen from "../screens/RoleLoginScreen";
+import RouteHazardMapScreen from "../screens/RouteHazardMapScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -62,6 +63,7 @@ export default function AppNavigator() {
         <Stack.Screen name="GPSTracking" component={GPSTrackingScreen} />
         <Stack.Screen name="ReportViolation" component={ReportViolationScreen} />
         <Stack.Screen name="ReportHazard" component={ReportHazardScreen} />
+        <Stack.Screen name="RouteHazardMap" component={RouteHazardMapScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

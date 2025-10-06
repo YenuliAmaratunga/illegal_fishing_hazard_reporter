@@ -1,0 +1,74 @@
+[
+  {
+    "id": "bar_reef",
+    "name": "Bar Reef Marine Sanctuary",
+    "coordinates": [
+      { "latitude": 8.350, "longitude": 79.695 },
+      { "latitude": 8.365, "longitude": 79.710 },
+      { "latitude": 8.355, "longitude": 79.725 },
+      { "latitude": 8.340, "longitude": 79.710 }
+    ],
+    "district": "Puttalam",
+    "description": "One of Sri Lanka’s largest coral reefs, vital for biodiversity. Fishing restricted to protect reef species."
+  },
+  {
+    "id": "hikkaduwa",
+    "name": "Hikkaduwa Marine National Park",
+    "coordinates": [
+      { "latitude": 6.133, "longitude": 80.095 },
+      { "latitude": 6.140, "longitude": 80.105 },
+      { "latitude": 6.130, "longitude": 80.115 },
+      { "latitude": 6.125, "longitude": 80.105 }
+    ],
+    "district": "Galle",
+    "description": "Coral sanctuary and popular tourist reef. Fishing and anchoring prohibited inside park boundaries."
+  },
+  {
+    "id": "pigeon_island",
+    "name": "Pigeon Island National Park",
+    "coordinates": [
+      { "latitude": 8.726, "longitude": 81.183 },
+      { "latitude": 8.732, "longitude": 81.195 },
+      { "latitude": 8.720, "longitude": 81.200 },
+      { "latitude": 8.715, "longitude": 81.187 }
+    ],
+    "district": "Trincomalee",
+    "description": "Located off Nilaveli coast; nesting grounds for rock pigeons and coral habitat for reef fish."
+  },
+  {
+    "id": "kayankerni",
+    "name": "Kayankerni Reef Marine Sanctuary",
+    "coordinates": [
+      { "latitude": 7.930, "longitude": 81.600 },
+      { "latitude": 7.940, "longitude": 81.615 },
+      { "latitude": 7.920, "longitude": 81.620 },
+      { "latitude": 7.910, "longitude": 81.605 }
+    ],
+    "district": "Batticaloa",
+    "description": "Coral reef ecosystem declared as sanctuary in 2011. Coral collection and destructive fishing banned."
+  },
+  {
+    "id": "rumassala",
+    "name": "Rumassala Marine Sanctuary",
+    "coordinates": [
+      { "latitude": 6.010, "longitude": 80.250 },
+      { "latitude": 6.020, "longitude": 80.260 },
+      { "latitude": 6.010, "longitude": 80.270 },
+      { "latitude": 6.000, "longitude": 80.260 }
+    ],
+    "district": "Galle",
+    "description": "Marine habitat near Unawatuna famous for coral and mythical Hanuman hill. Fishing restricted."
+  },
+  {
+    "id": "mirissa",
+    "name": "Mirissa Marine Protected Area",
+    "coordinates": [
+      { "latitude": 5.945, "longitude": 80.450 },
+      { "latitude": 5.950, "longitude": 80.460 },
+      { "latitude": 5.940, "longitude": 80.470 },
+      { "latitude": 5.935, "longitude": 80.460 }
+    ],
+    "district": "Matara",
+    "description": "Proposed protected area to safeguard whale and dolphin habitats in the southern coast."
+  }
+]

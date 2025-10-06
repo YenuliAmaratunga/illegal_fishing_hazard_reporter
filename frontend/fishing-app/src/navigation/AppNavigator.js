@@ -3,6 +3,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { Home, Cloud, AlertTriangle, Locate } from "lucide-react-native";
+import WeatherStack from "./weatherStack";
+
 
 // Screens
 import LandingScreen from "../screens/LandingScreen";
@@ -40,7 +42,7 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Weather" component={WeatherForecastScreen} />
+      <Tab.Screen name="Weather" component={WeatherStack} />
       <Tab.Screen name="Risk" component={RiskScreen} />
       <Tab.Screen name="GPS" component={GPSTrackingScreen} />
   
@@ -63,7 +65,6 @@ export default function AppNavigator() {
         <Stack.Screen name="GPSTracking" component={GPSTrackingScreen} />
         <Stack.Screen name="ReportViolation" component={ReportViolationScreen} />
         <Stack.Screen name="ReportHazard" component={ReportHazardScreen} />
-        <Stack.Screen name="RouteHazardMap" component={RouteHazardMapScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

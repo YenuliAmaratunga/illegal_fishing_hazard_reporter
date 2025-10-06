@@ -61,10 +61,10 @@ export const fetchMarineWeatherData = async (lat, lon) => {
     console.error("StormGlass API error:", err.message);
     return { source: "StormGlass", error: err.message };
   }
-};*/
+};
 
 // Fetch tide data (WorldTides)
-export const fetchTideData = async (lat, lon) => {
+/*export const fetchTideData = async (lat, lon) => {
   try {
     const apiKey = process.env.WORLDTIDES_API_KEY;
     const url = `https://www.worldtides.info/api/v3?extremes&lat=${lat}&lon=${lon}&key=${apiKey}`;
@@ -82,4 +82,4 @@ export const fetchTideData = async (lat, lon) => {
     console.error("WorldTides API error:", err.message);
     return { source: "WorldTides", error: err.message };
   }
-};
+};*/

@@ -42,7 +42,6 @@ export default function WeatherForecastScreen() {
         const res = await axios.get(
           `https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/weather-service/v1.0/api/weather/forecast?lat=${latitude}&lon=${longitude}`
         );
-
         if (res.data.success) setWeather(res.data.data);
       } catch (err) {
         console.error("Error fetching weather data:", err);
@@ -54,6 +53,7 @@ export default function WeatherForecastScreen() {
     fetchWeather();
   }, []);
 
+  //TO DO ADD LOADING ICON HERE
   if (loading)
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -258,7 +258,7 @@ export default function WeatherForecastScreen() {
           </View>
         )}
 
-        {/* 🌤 Current Conditions */}
+        {/* Current Conditions */}
         <View
           className="bg-lightPurple rounded-2xl p-5 mb-6 shadow-lg"
           style={{ elevation: 4 }}
@@ -300,7 +300,7 @@ export default function WeatherForecastScreen() {
           />
         </View>
 
-        {/* ⏱ Forecast Switch */}
+        {/* Forecast Switch */}
         <View className="flex-row justify-center mb-6 rounded-full">
           {["Hourly", "Daily"].map((type) => (
             <TouchableOpacity
@@ -326,7 +326,7 @@ export default function WeatherForecastScreen() {
         {/* Forecast Cards */}
         {forecastType === "Hourly" ? renderHourly() : renderDaily()}
 
-        {/* 💡 Quick Tips */}
+        {/* Quick Tips */}
         <View className="bg-blueLight rounded-2xl mt-8 mb-6 shadow-md">
           <TouchableOpacity
             onPress={toggleTips}
@@ -363,7 +363,6 @@ export default function WeatherForecastScreen() {
           )}
         </View>
 
-        {/* 🗺 Route Hazard Map Button */}
         <TouchableOpacity
           onPress={() => navigation.navigate("RouteHazardMap")}
           className="flex-row items-center justify-center border border-blueLight bg-accentPurple py-3 rounded-xl mb-12 mt-4 shadow-lg mx-10"

@@ -8,7 +8,7 @@ const cardData = {
     { id: 1, title: "Registration & QR", bg: "bg-darkPurple", icon: IdCard },
     { id: 2, title: "Safety & Risk", bg: "bg-darkPurple", screen: "Risk", icon: ShieldAlert },
     { id: 3, title: "Weather Forecast", bg: "bg-darkPurple", screen: "Weather", icon: CloudSun },
-    { id: 4, title: "Live GPS & Tracking", bg: "bg-darkPurple", icon: Locate },
+    { id: 4, title: "Live GPS & Tracking", bg: "bg-darkPurple", screen: "GPS", icon: Locate },
     { id: 5, title: "Report Violation", bg: "bg-darkPurple", screen: "ReportViolation", icon: AlertTriangle },
     { id: 6, title: "Report Hazard", bg: "bg-darkPurple", screen: "ReportHazard", icon: Flame },
   ],
@@ -16,13 +16,13 @@ const cardData = {
     { id: 1, title: "ලියාපදිංචි කිරීම & QR", bg: "bg-lightGreen", icon: IdCard },
     { id: 2, title: "ආරක්ෂාව & අවදානම", bg: "bg-lightPeach", icon: ShieldAlert },
     { id: 3, title: "කාලගුණ පූර්ව අනුමාන", bg: "bg-regalBlue", icon: CloudSun },
-    { id: 4, title: "GPS & නිරීක්ෂණය", bg: "bg-seaGreen", icon: Locate },
+    { id: 4, title: "GPS & නිරීක්ෂණය", bg: "bg-seaGreen", screen: "GPS", icon: Locate },
   ],
   ta: [
     { id: 1, title: "பதிவு & QR", bg: "bg-lightGreen", icon: IdCard },
     { id: 2, title: "பாதுகாப்பு & ஆபத்து", bg: "bg-lightPeach", icon: ShieldAlert },
     { id: 3, title: "வானிலை முன்னறிவிப்பு", bg: "bg-regalBlue", icon: CloudSun },
-    { id: 4, title: "GPS & கண்காணிப்பு", bg: "bg-seaGreen", icon: Locate },
+    { id: 4, title: "GPS & கண்காணிப்பு", bg: "bg-seaGreen", screen: "GPS", icon: Locate },
   ],
 };
 

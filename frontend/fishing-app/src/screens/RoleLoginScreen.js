@@ -50,17 +50,17 @@ export default function RoleLoginScreen() {
         role,
       });
 
-      const { token, message, userName } = res.data;
+      const { token, message, userName ,userId} = res.data;
 
       if (token) {
         Alert.alert("Success", message || "Login successful");
         await AsyncStorage.setItem(
           "authData",
-          JSON.stringify({ token, language, userName })
+          JSON.stringify({ token, language, userName,userId })
         );
 
         if (role === "fisherman") {
-          navigation.navigate("Fisherman", { language, token });
+          navigation.navigate("Fisherman", { language, token,userId });
         }
       } else {
         Alert.alert("Error", message || "Login failed");

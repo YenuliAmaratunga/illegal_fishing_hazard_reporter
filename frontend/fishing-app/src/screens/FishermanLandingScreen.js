@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function FishermanLandingScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { language, token,name} = route.params;
+  const { language, token,userId} = route.params;
 
   const translations = {
     si: {
@@ -47,7 +47,12 @@ export default function FishermanLandingScreen() {
         <View className="flex-row flex-wrap justify-between">
           {/* Cards */}
           {["boat","trip","safe","com","gear","license"].map((key, index) => (
-            <TouchableOpacity key={index} className="w-[48%] bg-white p-6 rounded-2xl mb-4 shadow">
+            <TouchableOpacity key={index} className="w-[48%] bg-white p-6 rounded-2xl mb-4 shadow"  onPress={() => {
+        if (key === "boat") {
+          navigation.navigate("RegisterBoat");
+        }
+        // Add other navigation for other cards if needed
+      }}>
               <View className="items-center">
                 <Text className="text-3xl">
                   {key === "boat" ? "⛵" : key === "trip" ? "🗺️" : key === "safe" ? "🛡️" : key === "com" ? "👥" : key === "gear" ? "🧭" : "📄"}

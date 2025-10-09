@@ -13,8 +13,9 @@ module.exports = {
         beige : "#AB9072" //Accent Colour
       },
       fontFamily: {
-        poppins: "Poppins-Regular",
-        glasing: "Glasing-Regular",
+       sans: ['Inter', 'System'], // default sans font
+        heading: ['Poppins', 'System'],
+        body: ['Roboto', 'System'],
       },
     },
   },

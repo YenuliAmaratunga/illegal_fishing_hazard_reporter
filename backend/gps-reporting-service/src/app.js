@@ -24,6 +24,6 @@ app.get('/health', (_, res) => res.status(200).send('OK'));
 
 //Routes
 app.use('/api/gps', require('./routes/gpsRoutes'));
-app.use('/api/gps', require('./routes/reportRoutes')); 
+app.use('/api/reports', require('./routes/reportRoutes')); 
 
 module.exports = app;

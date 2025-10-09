@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { IdCard, ShieldAlert, CloudSun, Locate, AlertTriangle, Flame } from "lucide-react-native";
+import { IdCard, ShieldAlert, CloudSun, Locate, AlertTriangle, Flame, ClipboardList} from "lucide-react-native";
 
 const cardData = {
   en: [
@@ -9,8 +9,7 @@ const cardData = {
     { id: 2, title: "Safety & Risk", bg: "bg-darkPurple", screen: "Risk", icon: ShieldAlert },
     { id: 3, title: "Weather Forecast", bg: "bg-darkPurple", screen: "Weather", icon: CloudSun },
     { id: 4, title: "Live GPS & Tracking", bg: "bg-darkPurple", screen: "GPS", icon: Locate },
-    { id: 5, title: "Report Violation", bg: "bg-darkPurple", screen: "ReportViolation", icon: AlertTriangle },
-    { id: 6, title: "Report Hazard", bg: "bg-darkPurple", screen: "ReportHazard", icon: Flame },
+    { id: 5, title: "Report Centre", bg: "bg-darkPurple", screen: "ReportHub", icon: ClipboardList },
   ],
   si: [
     { id: 1, title: "ලියාපදිංචි කිරීම & QR", bg: "bg-lightGreen", icon: IdCard },

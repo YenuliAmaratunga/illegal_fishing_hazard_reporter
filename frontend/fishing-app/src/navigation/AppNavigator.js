@@ -20,6 +20,7 @@ import RoleRegisterScreen from "../screens/RoleRegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RoleLoginScreen from "../screens/RoleLoginScreen";
 import RouteHazardMapScreen from "../screens/RouteHazardMapScreen";
+import PoliceDashboard from "../screens/PoliceDashboard";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -64,6 +65,7 @@ export default function AppNavigator() {
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="ReportViolation" component={ReportViolationScreen} />
         <Stack.Screen name="ReportHazard" component={ReportHazardScreen} />
+        <Stack.Screen name="PoliceDashboard" component={PoliceDashboard} />
       </Stack.Navigator>
     </NavigationContainer>
   );

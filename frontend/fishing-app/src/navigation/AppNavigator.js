@@ -16,6 +16,7 @@ import LoginScreen from "../screens/LoginScreen";
 import RoleLoginScreen from "../screens/RoleLoginScreen";
 import FishermanLandingScreen from "../screens/FishermanLandingScreen";
 import RegisterBoatScreen from "../screens/RegisterBoatScreen";
+import TripRegistrationScreen from "../screens/TripRegistrationScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -59,6 +60,7 @@ export default function AppNavigator() {
         <Stack.Screen name = "Fisherman" component={FishermanLandingScreen}/>
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name = "RegisterBoat" component={RegisterBoatScreen}/>
+        <Stack.Screen name = "RegisterTrip" component={TripRegistrationScreen}/>
        
       </Stack.Navigator>
     </NavigationContainer>

@@ -20,6 +20,15 @@
     "web": {
       "favicon": "./assets/icon.png",
       "bundler": "metro"
-    }
+    },
+
+    "plugins": [
+    [
+      "expo-location",
+      {
+        "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+      }
+    ]
+  ]
   }
 }

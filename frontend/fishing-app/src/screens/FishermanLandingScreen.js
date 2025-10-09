@@ -51,6 +51,11 @@ export default function FishermanLandingScreen() {
         if (key === "boat") {
           navigation.navigate("RegisterBoat");
         }
+
+        if(key == 'trip'){
+
+          navigation.navigate("RegisterTrip");
+        }
         // Add other navigation for other cards if needed
       }}>
               <View className="items-center">

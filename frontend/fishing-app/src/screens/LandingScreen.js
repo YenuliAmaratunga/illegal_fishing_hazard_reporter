@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 
 export default function LandingScreen({ navigation }) {
   return (
-    <View className="flex-1 items-center justify-center" style={{ backgroundColor: "#3C467B" }}>
+    <View className="flex-1 items-center justify-center" style={{ backgroundColor: "#D8D8FF" }}>
       {/* App Logo */}
       <Image
         source={require("../assets/AppLogo.png")}

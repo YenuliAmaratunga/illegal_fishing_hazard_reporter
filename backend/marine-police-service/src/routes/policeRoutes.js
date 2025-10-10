@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { 
+    createAlert,
     getActiveAlerts,
     resolveAlert,
     getViolationReports,
@@ -12,6 +13,7 @@ const {
 // Alert Routes
 router.get('/alerts', getActiveAlerts);
 router.put('/alerts/:alertId/resolve', resolveAlert);
+router.post("/create", createAlert);
 
 // Violation Report Routes (API calls to GPS service)
 router.get('/violation-reports', getViolationReports);

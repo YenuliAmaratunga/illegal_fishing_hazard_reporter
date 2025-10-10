@@ -5,6 +5,24 @@ const axios = require('axios');
 const GPS_SERVICE_URL = 'http://localhost:5001/api/gps';
 
 // ALERTS (SOS, restricted zones, etc.)
+exports.createAlert = async (req, res) => {
+  try {
+    const { type, boatId, latitude, longitude, message, status } = req.body;
+    const alert = new Alert({
+      type,
+      boatId,
+      latitude,
+      longitude,
+      message,
+      status: status || "active",
+    });
+    await alert.save();
+    res.status(201).json({ success: true, data: alert });
+  } catch (err) {
+    console.error("Error creating alert:", err);
+    res.status(500).json({ success: false, message: "Failed to create alert" });
+  }
+};
 
 exports.getActiveAlerts = async (req, res) => {
     try {

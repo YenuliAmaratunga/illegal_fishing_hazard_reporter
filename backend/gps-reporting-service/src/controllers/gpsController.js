@@ -1,4 +1,6 @@
 const BoatLocation = require('../models/BoatLocation');
+const axios = require("axios");
+const POLICE_SERVICE_URL = "https://10b8c329-d78f-4b7f-8cd9-448ba1dae2e2-dev.e1-us-east-azure.choreoapis.dev/aquawatch/marine-police-service/v1.0/api/alerts";
 
 // Update boat location (called from fisherman app)
 exports.updateLocation = async (req, res) => {
@@ -60,19 +62,33 @@ exports.sendSOS = async (req, res) => {
 
         await sosLocation.save();
 
-        res.status(201).json({
-            success: true,
-            message: 'SOS alert sent successfully',
-            data: sosLocation
-        });
-
-    } catch (error) {
-        console.error('Error sending SOS:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Internal server error' 
-        });
+         try {
+      await axios.post(`${POLICE_SERVICE_URL}/create`, {
+        type: "SOS",
+        boatId,
+        latitude,
+        longitude,
+        status: "active",
+        message: `SOS from ${boatId}`,
+        timestamp: new Date(),
+      });
+      console.log("✅ Sent SOS alert to Marine Police");
+    } catch (notifyErr) {
+      console.error("⚠️ Failed to send alert to police:", notifyErr.message);
     }
+
+    return res.status(201).json({
+      success: true,
+      message: "SOS alert sent successfully",
+      data: sosLocation,
+    });
+  } catch (error) {
+    console.error("Error sending SOS:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
 };
 
 // Get latest locations of all boats (for police dashboard)

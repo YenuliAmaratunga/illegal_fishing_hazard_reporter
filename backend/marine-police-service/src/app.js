@@ -19,6 +19,9 @@ app.get('/', (req,res) => {
     res.json({ message: 'Marine Police Service is running'});
 }); 
 
+// Health check endpoint
+app.get('/health', (_, res) => res.status(200).send('OK'));
+
 //Routes
 app.use('/api/police', require('./routes/policeRoutes'));
 

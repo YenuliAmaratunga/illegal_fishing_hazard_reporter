@@ -2,7 +2,9 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
-import { Home, Cloud, AlertTriangle, User } from "lucide-react-native";
+import { Home, Cloud, AlertTriangle, Locate } from "lucide-react-native";
+import WeatherStack from "./weatherStack";
+
 
 // Screens
 import LandingScreen from "../screens/LandingScreen";
@@ -17,6 +19,8 @@ import RegisterScreen from "../screens/RegisterScreen";
 import RoleRegisterScreen from "../screens/RoleRegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RoleLoginScreen from "../screens/RoleLoginScreen";
+import RouteHazardMapScreen from "../screens/RouteHazardMapScreen";
+import PoliceDashboard from "../screens/PoliceDashboard";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -27,21 +31,21 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#004675", // regalBlue
-        tabBarInactiveTintColor: "#548C92", // seaGreen
-        tabBarStyle: { backgroundColor: "#E0D7CF" }, // lightPeach
+        tabBarActiveTintColor: "#50589C", 
+        tabBarInactiveTintColor: "#949494", 
+        tabBarStyle: { backgroundColor: "#ffffff" }, 
         tabBarIcon: ({ color, size }) => {
           if (route.name === "Home") return <Home color={color} size={size} />;
           if (route.name === "Weather") return <Cloud color={color} size={size} />;
           if (route.name === "Risk") return <AlertTriangle color={color} size={size} />;
-          if (route.name === "Profile") return <User color={color} size={size} />;
+          if (route.name === "GPS") return <Locate color={color} size={size} />;
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Weather" component={WeatherForecastScreen} />
+      <Tab.Screen name="Weather" component={WeatherStack} />
       <Tab.Screen name="Risk" component={RiskScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="GPS" component={GPSTrackingScreen} />
   
     </Tab.Navigator>
   );
@@ -57,10 +61,11 @@ export default function AppNavigator() {
         <Stack.Screen name = "RoleRegister" component={RoleRegisterScreen}/>
         <Stack.Screen name = "Login" component = {LoginScreen}/>
         <Stack.Screen name = "RoleLogin" component={RoleLoginScreen}/>
+        <Stack.Screen name="WeatherForecastScreen" component={WeatherForecastScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
-        <Stack.Screen name="GPSTracking" component={GPSTrackingScreen} />
         <Stack.Screen name="ReportViolation" component={ReportViolationScreen} />
         <Stack.Screen name="ReportHazard" component={ReportHazardScreen} />
+        <Stack.Screen name="PoliceDashboard" component={PoliceDashboard} />
       </Stack.Navigator>
     </NavigationContainer>
   );

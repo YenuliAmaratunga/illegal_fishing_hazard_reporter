@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation} from "@react-navigation/native";
 import axios from "axios";
+const AUTH_BASE =
+  "https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/registration-service/v1.0";
 
 export default function RoleLoginScreen() {
   const route = useRoute();
+  const navigation = useNavigation();
   const { language, role } = route.params;
 
   const [phone, setPhone] = useState("");
@@ -35,15 +38,15 @@ export default function RoleLoginScreen() {
     }
 
     try {
-      const res = await axios.post("http://192.168.8.121:8080/api/User/login", {
+      const res = await axios.post(`${AUTH_BASE}/api/User/login`, {
         phone,
         password,
         role,
-      });
+      },{ timeout: 25000 });
 
     console.log("Full response:", res.data);
 
-  const { token, message } = res.data;
+  const { token, user, message } = res.data;
 
   if (token) {
     Alert.alert("Success", message || "Login successful");
@@ -51,6 +54,14 @@ export default function RoleLoginScreen() {
   } else {
     Alert.alert("Error", message || "Login failed");
   }
+    if (token) {
+        const effectiveRole = user?.role || role;
+        if (effectiveRole === "marine") {
+          navigation.reset({ index: 0, routes: [{ name: "PoliceDashboard" }] });
+        } else {
+          navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
+        }
+      }
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Something went wrong");

@@ -19,6 +19,9 @@ app.get('/', (req,res) => {
     res.json({ message: 'GPS Reporting Service is running'});
 });
 
+// Health check endpoint
+app.get('/health', (_, res) => res.status(200).send('OK'));
+
 //Routes
 app.use('/api/gps', require('./routes/gpsRoutes'));
 app.use('/api/gps', require('./routes/reportRoutes')); 

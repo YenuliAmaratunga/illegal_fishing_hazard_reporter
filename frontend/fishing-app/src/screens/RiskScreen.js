@@ -7,7 +7,7 @@ const safetyChecklist = {
   MIN_FUEL_AMOUNT_LITERS: 20,
   MIN_FUEL_EFFICIENCY: 2.0, // km per liter
   MIN_LIFE_JACKETS_PER_CREW: 1,
-  CRITICAL_ENGINE_STATUSES: ['Needs Maintenance', 'Critical'],
+  CRITICAL_ENGINE_STATUSES: ["Needs Maintenance", "Critical"],
   RADIO_COMM_REQUIRED: true,
   WEATHER_CHECK_REQUIRED: true,
   MIN_FUEL_BUFFER_PERCENTAGE: 0.15,
@@ -24,13 +24,16 @@ export default function RiskScreen() {
 
       <View className="bg-darkBlue rounded-2xl p-4 mb-4">
         <Text className="text-lightPeach mb-2">
-          Please ensure the following safety conditions are met before heading out:
+          Please ensure the following safety conditions are met before heading
+          out:
         </Text>
 
         <View className="mb-3">
           <Text className="text-lightPeach font-semibold">
             • Maximum Boat Age:{" "}
-            <Text className="font-normal">{safetyChecklist.MAX_BOAT_AGE_YEARS} years</Text>
+            <Text className="font-normal">
+              {safetyChecklist.MAX_BOAT_AGE_YEARS} years
+            </Text>
           </Text>
           <Text className="text-lightPeach text-sm italic">
             Older boats may not be safe or compliant.
@@ -40,7 +43,9 @@ export default function RiskScreen() {
         <View className="mb-3">
           <Text className="text-lightPeach font-semibold">
             • Minimum Fuel Amount:{" "}
-            <Text className="font-normal">{safetyChecklist.MIN_FUEL_AMOUNT_LITERS} liters</Text>
+            <Text className="font-normal">
+              {safetyChecklist.MIN_FUEL_AMOUNT_LITERS} liters
+            </Text>
           </Text>
           <Text className="text-lightPeach text-sm italic">
             Ensure sufficient fuel for the trip.
@@ -50,7 +55,9 @@ export default function RiskScreen() {
         <View className="mb-3">
           <Text className="text-lightPeach font-semibold">
             • Minimum Fuel Efficiency:{" "}
-            <Text className="font-normal">{safetyChecklist.MIN_FUEL_EFFICIENCY} km/l</Text>
+            <Text className="font-normal">
+              {safetyChecklist.MIN_FUEL_EFFICIENCY} km/l
+            </Text>
           </Text>
           <Text className="text-lightPeach text-sm italic">
             Check your boat's fuel consumption rate.
@@ -60,7 +67,9 @@ export default function RiskScreen() {
         <View className="mb-3">
           <Text className="text-lightPeach font-semibold">
             • Life Jackets Per Crew Member:{" "}
-            <Text className="font-normal">{safetyChecklist.MIN_LIFE_JACKETS_PER_CREW}</Text>
+            <Text className="font-normal">
+              {safetyChecklist.MIN_LIFE_JACKETS_PER_CREW}
+            </Text>
           </Text>
           <Text className="text-lightPeach text-sm italic">
             Everyone must have a life jacket.
@@ -98,20 +107,15 @@ export default function RiskScreen() {
         <View className="mb-3">
           <Text className="text-lightPeach font-semibold">
             • Minimum Fuel Buffer Percentage:{" "}
-            <Text className="font-normal">{(safetyChecklist.MIN_FUEL_BUFFER_PERCENTAGE * 100).toFixed(0)}%</Text>
+            <Text className="font-normal">
+              {(safetyChecklist.MIN_FUEL_BUFFER_PERCENTAGE * 100).toFixed(0)}%
+            </Text>
           </Text>
           <Text className="text-lightPeach text-sm italic">
             Extra fuel to cover unexpected conditions.
           </Text>
         </View>
       </View>
-
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Home")}
-        className="bg-lightGreen rounded-2xl py-3 mt-6 items-center"
-      >
-        <Text className="text-darkBlue font-bold text-lg">← Back to Home</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 }

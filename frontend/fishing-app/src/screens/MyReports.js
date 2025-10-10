@@ -1,80 +1,123 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  RefreshControl,
+  Image,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import dayjs from "dayjs";
 import axios from "axios";
-import { GPS_BASE } from "../api/config";
+
+import { getMyReports } from "../api/client";
+
+const reporterIdFallback = "BOAT_TEMP_001"; // will be replaced by login user if available
 
 export default function MyReports() {
-  const [loading, setLoading] = useState(true);
-  const [items, setItems]   = useState([]);
+  const nav = useNavigation();
+  const [items, setItems] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // TEMP reporterId: match what you used in forms
-  const reporterId = "BOAT_TEMP_001";
+  const fetchReports = useCallback(async () => {
+    try {
+      setRefreshing(true);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [viol, haz] = await Promise.all([
-          axios.get(`${GPS_BASE}/api/reports/violation-reports`, { timeout: 15000 }),
-          axios.get(`${GPS_BASE}/api/reports/hazard-reports`,    { timeout: 15000 }),
-        ]);
+      const reporterId = reporterIdFallback;
 
-        // filter by reporterId client-side (until backend supports ?reporterId=)
-        const vMine = Array.isArray(viol.data?.data) ? viol.data.data.filter(r => r.reporterId === reporterId) : [];
-        const hMine = Array.isArray(haz.data?.data)  ? haz.data.data.filter(r => r.reporterId === reporterId)  : [];
-
-        // normalize to one list with type tag
-        const combined = [
-          ...vMine.map(r => ({ type: "violation", id: r._id, title: r.violationType, status: r.status, when: r.timestamp })),
-          ...hMine.map(r => ({ type: "hazard",    id: r._id, title: r.hazardType,    status: r.status, when: r.timestamp })),
-        ].sort((a,b) => new Date(b.when) - new Date(a.when));
-
-        setItems(combined);
-      } catch (e) {
-        console.log("MyReports load error:", e?.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+      const data = await getMyReports(reporterId);
+      setItems(Array.isArray(data) ? data : data?.data || []);
+    } catch (e) {
+      console.log("MyReports load error:", e?.message);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
-  if (loading) {
-    return (
-      <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator />
-        <Text className="text-blue mt-2">Loading your reports…</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
 
-  if (!items.length) {
-    return (
-      <View className="flex-1 bg-white items-center justify-center px-6">
-        <Text className="text-blue text-center">No reports yet.</Text>
-      </View>
-    );
-  }
+  const renderItem = ({ item }) => {
+    const isViolation = item.kind === "violation" || item.violationType;
+    const title = isViolation
+      ? item.violationType || "Violation"
+      : item.hazardType || "Hazard";
+    const thumb = item?.evidence?.imageUrl?.[0];
+    const when = item.timestamp
+      ? dayjs(item.timestamp).format("YYYY-MM-DD HH:mm")
+      : "—";
+    const status = item.status || "pending";
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity className="bg-white border border-blueLight rounded-2xl px-4 py-3 mb-3">
-      <Text className="text-blue font-extrabold">
-        {item.type === "violation" ? "Violation" : "Hazard"} • {item.title}
-      </Text>
-      <Text className="text-blue mt-1">Status: {item.status}</Text>
-      <Text className="text-blue mt-1">
-        {new Date(item.when).toLocaleString()}
-      </Text>
-    </TouchableOpacity>
-  );
+    return (
+      <TouchableOpacity
+        activeOpacity={0.9}
+        className="bg-white rounded-2xl px-4 py-4 mb-3 border border-[#D8D8FF]"
+        onPress={() => {
+          if (isViolation) {
+            nav.navigate("ReportViolation", { mode: "edit", report: item });
+          } else {
+            nav.navigate("ReportHazard", { mode: "edit", report: item });
+          }
+        }}
+      >
+        <View className="flex-row">
+          <View className="flex-1 pr-3">
+            <Text className="text-blue font-bold text-base">
+              {isViolation ? "Violation" : "Hazard"}
+            </Text>
+            <Text className="text-blue opacity-80 mt-1">{title}</Text>
+            <Text className="text-blue opacity-60 mt-1 text-xs">{when}</Text>
+            <View className="mt-2 bg-[#EEF0FF] px-2 py-1 rounded-full self-start">
+              <Text className="text-blue text-xs font-semibold capitalize">
+                {status}
+              </Text>
+            </View>
+          </View>
+          {thumb ? (
+            <Image source={{ uri: thumb }} className="w-20 h-20 rounded-xl" />
+          ) : (
+            <View className="w-20 h-20 rounded-xl bg-[#EEF0FF] items-center justify-center">
+              <Text className="text-blue text-xs">No image</Text>
+            </View>
+          )}
+        </View>
+        <Text className="text-blue text-right mt-2">Tap to edit →</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <View className="flex-1 bg-white px-5 pt-6">
-      <Text className="text-2xl font-extrabold text-blue text-center mb-8">My Reports</Text>
+    <SafeAreaView className="flex-1 bg-white">
+      <View className="px-6 pt-4 pb-2">
+        <Text className="text-2xl font-extrabold text-blue">My Reports</Text>
+        <Text className="text-blue opacity-60 mt-1">
+          View and edit your submissions
+        </Text>
+      </View>
+
       <FlatList
         data={items}
-        keyExtractor={(it) => `${it.type}:${it.id}`}
+        keyExtractor={(it) => it._id}
         renderItem={renderItem}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: 24,
+          paddingTop: 8,
+        }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={fetchReports} />
+        }
+        ListEmptyComponent={
+          <View className="px-6 mt-10">
+            <Text className="text-blue opacity-70 text-center">
+              You haven’t submitted any reports yet.
+            </Text>
+          </View>
+        }
       />
-    </View>
+    </SafeAreaView>
   );
 }

@@ -13,18 +13,27 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
-import { gpsPost } from "../api/client";
-import { GPS_BASE } from "../api/config"; // ✅ so we can log the exact URL
+import { useRoute, useNavigation } from "@react-navigation/native";
+
+import { gpsPost, gpsPut } from "../api/client";
+import { GPS_BASE } from "../api/config";
+import { uploadToCloudinary } from "../utils/uploadImage";
 
 export default function ReportViolationScreen() {
-  // ---- form state ----
-  const [violationType, setViolationType] = useState(""); // choose from chips
-  const [description, setDescription]   = useState("");
-  const [evidence, setEvidence]         = useState([]);   // image URIs
-  const [location, setLocation]         = useState(null); // { latitude, longitude }
-  const [submitting, setSubmitting]     = useState(false);
+  // create vs edit
+  const route = useRoute();
+  const navigation = useNavigation();
+  const mode = route.params?.mode || "create";
+  const existing = route.params?.report || null;
 
-  // quick chips (free text not needed now)
+  // form state
+  const [violationType, setViolationType] = useState(existing?.violationType || "");
+  const [description, setDescription] = useState(existing?.description || "");
+  const [evidence, setEvidence] = useState(existing?.evidence?.imageUrl || []); // array of URLs
+  const [location, setLocation] = useState(existing?.location || null);
+  const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
   const VIOLATION_OPTIONS = [
     "Fishing in restricted zone",
     "Illegal/ghost nets",
@@ -34,27 +43,15 @@ export default function ReportViolationScreen() {
     "Other",
   ];
 
-  // 🔎 one-time health check + show the exact endpoint we’ll call
+  // (Optional) quick log to confirm endpoint
   useEffect(() => {
-    const check = async () => {
-      try {
-        const url = `${GPS_BASE}/health`;
-        console.log("[VIOLATION HEALTH URL]", url);
-        const res = await fetch(url, { method: "GET" });
-        const txt = await res.text();
-        console.log("[VIOLATION HEALTH RES]", txt);
-      } catch (e) {
-        console.log("[VIOLATION HEALTH ERROR]", e?.message);
-      }
-      console.log(
-        "[VIOLATION POST URL]",
-        `${GPS_BASE}/api/reports/violation-reports`
-      );
-    };
-    check();
-  }, []);
+    console.log("[POST URL]", `${GPS_BASE}/api/reports/violation-reports`);
+    if (mode === "edit") {
+      console.log("[PUT URL]", `${GPS_BASE}/api/reports/violation-reports/${existing?._id}`);
+    }
+  }, [mode, existing]);
 
-  // camera
+  // Camera → upload → add URL
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
@@ -65,14 +62,25 @@ export default function ReportViolationScreen() {
       quality: 0.8,
       aspect: [4, 3],
     });
-    if (!result.canceled) setEvidence((prev) => [...prev, result.assets[0].uri]);
+    if (result.canceled) return;
+
+    try {
+      setUploading(true);
+      // ⬇️ Upload to Cloudinary; returns an https URL
+      const url = await uploadToCloudinary(result.assets[0].uri);
+      setEvidence((prev) => [...prev, url]);
+    } catch (e) {
+      console.log("Upload error:", e?.message);
+      Alert.alert("Upload failed", e?.message || "Could not upload image");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removePhoto = (indexToRemove) => {
     setEvidence((prev) => prev.filter((_, i) => i !== indexToRemove));
   };
 
-  // GPS (optional)
   const getCurrentLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -87,50 +95,50 @@ export default function ReportViolationScreen() {
     }
   };
 
-  // submit
   const submitReport = async () => {
     if (!violationType) return Alert.alert("Violation Type", "Please select a violation");
-    if (!description)  return Alert.alert("Description", "Please add a short description");
+    if (!description) return Alert.alert("Description", "Please add a short description");
+
+    const payload = {
+      reporterId: "BOAT_TEMP_001",
+      boatId: "BOAT_TEMP_001",
+      violationType,
+      description,
+      location: location || undefined,
+      evidence: { imageUrl: evidence, videoUrl: [] },
+    };
 
     try {
       setSubmitting(true);
 
-      const payload = {
-        reporterId: "BOAT_TEMP_001",
-        boatId:     "BOAT_TEMP_001",
-        violationType,
-        description,
-        location: location || undefined,
-        evidence: { imageUrl: evidence, videoUrl: [] }, // arrays ✅ model-ready
-      };
-
-      // log payload + URL for quick debugging
-      const url = "/api/reports/violation-reports";
-      console.log("[POST] ", `${GPS_BASE}${url}`, payload);
-
-      const res = await gpsPost(url, payload); // uses baseURL = GPS_BASE
-      console.log("📤 violation submit response:", res);
-
-      // Choreo timeout case: surface more info
-      if (res?.code === "102504" || res?.message?.includes("timeout")) {
-        Alert.alert(
-          "Network timeout",
-          "The gateway timed out talking to the backend.\n\nCheck:\n• GPS_BASE points to gps-reporting-service (not police)\n• Path is /api/reports/violation-reports\n• Service is up (health shows OK)"
-        );
+      if (mode === "edit" && existing?._id) {
+        // ✅ EDIT
+        const res = await gpsPut(`/api/reports/violation-reports/${existing._id}`, payload);
+        if (res?.error || res?.message?.toLowerCase?.().includes("error")) {
+          throw new Error(res?.message || "Update failed");
+        }
+        Alert.alert("Updated", "Violation report updated");
+        navigation.goBack();
       } else {
+        // ✅ CREATE
+        const res = await gpsPost(`/api/reports/violation-reports`, payload);
+        if (res?.code === "102504" || res?.message?.includes?.("timeout")) {
+          Alert.alert(
+            "Network timeout",
+            "The gateway timed out talking to the backend.\n\nCheck base URL and service status."
+          );
+          return;
+        }
         Alert.alert("Success", "Violation report submitted!");
+        // reset
         setViolationType("");
         setDescription("");
         setEvidence([]);
         setLocation(null);
       }
     } catch (error) {
-      console.log("❌ Violation submit error:", error?.message, error?.response?.data);
-      const msg =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to submit report";
-      Alert.alert("Error", msg);
+      console.log("Violation submit error:", error?.message);
+      Alert.alert("Error", error?.message || "Failed to submit report");
     } finally {
       setSubmitting(false);
     }
@@ -145,7 +153,7 @@ export default function ReportViolationScreen() {
       >
         {/* Title */}
         <Text className="text-xl font-extrabold text-blue text-center mb-4">
-          🚨 Report Illegal Fishing
+          {mode === "edit" ? "Edit Violation" : "🚨 Report Illegal Fishing"}
         </Text>
 
         {/* Violation Type */}
@@ -153,10 +161,6 @@ export default function ReportViolationScreen() {
           <Text className="text-blue text-[17px] font-extrabold tracking-wide mb-2">
             Violation Type <Text className="text-red-600">*</Text>
           </Text>
-          <Text className="text-blue mb-3">
-            Choose one option that best matches the incident.
-          </Text>
-
           <View className="flex-row flex-wrap gap-2 mb-1">
             {VIOLATION_OPTIONS.map((label) => {
               const active = violationType === label;
@@ -182,13 +186,10 @@ export default function ReportViolationScreen() {
           <Text className="text-blue text-[17px] font-extrabold tracking-wide mb-2">
             Description <Text className="text-red-600">*</Text>
           </Text>
-          <Text className="text-blue mb-3">
-            Add details (boat color/marks, gear used, time).
-          </Text>
           <TextInput
             className="bg-white border border-blueLight rounded-2xl p-4 text-blue"
             style={{ minHeight: 120 }}
-            placeholder="Describe what you witnessed…"
+            placeholder="Describe what you witnessed (boat marks, gear, behavior, time)…"
             placeholderTextColor="#6E8CFB99"
             value={description}
             onChangeText={setDescription}
@@ -201,7 +202,6 @@ export default function ReportViolationScreen() {
           <Text className="text-blue text-[17px] font-extrabold tracking-wide mb-2">
             Evidence Photos {evidence.length > 0 ? `(${evidence.length})` : ""}
           </Text>
-          <Text className="text-blue mb-3">Photos help verification.</Text>
 
           {evidence.length > 0 && (
             <View className="flex-row flex-wrap mb-3">
@@ -222,24 +222,25 @@ export default function ReportViolationScreen() {
           <TouchableOpacity
             className="bg-white border border-blueLight rounded-2xl p-4 items-center"
             onPress={takePhoto}
+            disabled={uploading}
           >
             <Text className="text-blue text-base font-semibold">
-              📷 {evidence.length > 0 ? "Add Another Photo" : "Take Photo Evidence"}
+              📷 {uploading ? "Uploading…" : evidence.length > 0 ? "Add another photo" : "Take photo evidence"}
             </Text>
           </TouchableOpacity>
+
+          {/* ✅ Your “uploading” indicator lives right here */}
+          {uploading && <Text className="text-blue mt-2">Uploading photo…</Text>}
         </View>
 
-        {/* Location (optional) */}
+        {/* Location */}
         <View className="mt-6">
-          <Text className="text-blue text-[17px] font-extrabold tracking-wide mb-2">
-            Location
-          </Text>
-          <Text className="text-blue mb-3">Capture where the incident happened.</Text>
+          <Text className="text-blue text-[17px] font-extrabold tracking-wide mb-2">Location</Text>
           <TouchableOpacity
             className="bg-white border border-blueLight rounded-2xl p-4 items-center"
             onPress={getCurrentLocation}
           >
-            <Text className="text-blue text-base font-semibold">📍 Capture Current Location</Text>
+            <Text className="text-blue text-base font-semibold">📍 Capture current location</Text>
           </TouchableOpacity>
           {location && (
             <Text className="text-blue mt-2">
@@ -251,7 +252,7 @@ export default function ReportViolationScreen() {
         {/* Submit */}
         <View className="mt-8">
           <TouchableOpacity
-            className="bg-blue rounded-2xl p-4 items-center shadow opacity-100"
+            className="bg-blue rounded-2xl p-4 items-center shadow"
             onPress={submitReport}
             disabled={submitting}
           >
@@ -259,7 +260,8 @@ export default function ReportViolationScreen() {
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Text className="text-white text-xl font-bold">
-                Submit Report {evidence.length > 0 ? `(${evidence.length} photos)` : ""}
+                {mode === "edit" ? "Save Changes" : "Submit Report"}
+                {mode !== "edit" && evidence.length > 0 ? ` (${evidence.length} photos)` : ""}
               </Text>
             )}
           </TouchableOpacity>

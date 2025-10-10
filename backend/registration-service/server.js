@@ -14,13 +14,15 @@ const tripRoutes = require('./routes/TripRoutes');
 
 app.use(cors());
 app.use(express.json());
+
+// Health check endpoint
+app.get('/health', (_, res) => res.status(200).send('OK'));
+
 // app.use(fileUpload());
 
 app.use('/api/User',userRoutes);
 app.use('/api/Boat',boatRoutes);
 app.use('/api/Trip',tripRoutes);
-
-
 
 mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
@@ -28,7 +30,7 @@ mongoose.connect(process.env.MONGODB_URL, {
 })
 .then(() => console.log('✅ Connected to MongoDB'))
 .catch((err) => console.error('❌ MongoDB connection error:', err));
-app.listen(PORT,()=>{
+app.listen(PORT, '0.0.0.0', ()=>{
 
     console.log(`App is running on the port ${PORT}`); 
 })

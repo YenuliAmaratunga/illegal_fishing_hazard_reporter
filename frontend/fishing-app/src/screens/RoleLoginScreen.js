@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+ feature/register-page
 import { useRoute, useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+const AUTH_BASE =
+  "https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/registration-service/v1.0";
+
 
 export default function RoleLoginScreen() {
   const route = useRoute();
+  const navigation = useNavigation();
   const { language, role } = route.params;
   const navigation = useNavigation();
 
@@ -44,11 +49,11 @@ export default function RoleLoginScreen() {
     }
 
     try {
-      const res = await axios.post("http://192.168.8.121:8080/api/User/login", {
+      const res = await axios.post(`${AUTH_BASE}/api/User/login`, {
         phone,
         password,
         role,
-      });
+      },{ timeout: 25000 });
 
       const { token, message, userName ,userId} = res.data;
 
@@ -61,7 +66,9 @@ export default function RoleLoginScreen() {
 
         if (role === "fisherman") {
           navigation.navigate("Fisherman", { language, token,userId });
-        }
+        }if (role === "marine") {
+          navigation.reset({ index: 0, routes: [{ name: "PoliceDashboard" }] });
+        } 
       } else {
         Alert.alert("Error", message || "Login failed");
       }

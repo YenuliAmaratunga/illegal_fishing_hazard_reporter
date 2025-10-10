@@ -10,6 +10,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check endpoint
+app.get('/health', (_, res) => res.status(200).send('OK'));
+
 app.use("/api/weather", weatherRoutes);
 
 export default app;

@@ -35,7 +35,7 @@ useEffect(() => {
 };
 
   return (
-    <View className="flex-1 items-center justify-center" style={{ backgroundColor: "#004675" }}>
+    <View className="flex-1 items-center justify-center" style={{ backgroundColor: "#D8D8FF" }}>
       {/* App Logo */}
       <Image
         source={require("../assets/AppLogo.png")}
@@ -47,10 +47,10 @@ useEffect(() => {
       {/* Get Started Button */}
       <TouchableOpacity
         className="px-8 py-3 rounded-lg"
-        style={{ backgroundColor: "#B4D7D8" }} // lightGreen from theme
-        onPress={handleGetStarted}
+        style={{ backgroundColor: "#000435" }} 
+        onPress={() => navigation.replace("MainTabs")}
       >
-        <Text className="font-poppins text-darkBlue text-lg font-semibold">Get Started</Text>
+        <Text className="font-poppins text-white text-lg font-semibold">Get Started</Text>
       </TouchableOpacity>
     </View>
   );

@@ -5,12 +5,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        regalBlue: "#004675", //Onboarding Screen Background
-        darkBlue:"#285260", //Primary Header Colour
-        seaGreen:"#548C92", //Secondary Text Colour 
-        lightGreen: "#B4D7D8", //Button Colour
-        lightPeach: "#E0D7CF", //Secondary Button Colour
-        beige : "#AB9072" //Accent Colour
+        blue: "#3C467B", 
+        blueLight: "#50589C", 
+        darkBlue: "#000435",
+        darkPurple: "#636CCB",
+        purple: "#6E8CFB",
+        lightPurple: "#D8D8FF",
+        accentPurple : "#BABCFF",
+        primaryText :"#E8EAFF",
+        secondaryText : "#B7B9E0",
+        accentText : "#6E8CFB"
       },
       fontFamily: {
        sans: ['Inter', 'System'], // default sans font

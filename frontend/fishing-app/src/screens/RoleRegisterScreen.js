@@ -3,6 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from "reac
 import { useRoute, useNavigation } from "@react-navigation/native";
 import axios from "axios";
 
+const AUTH_BASE =
+  "https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/registration-service/v1.0";
+
 export default function RoleRegisterScreen() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -115,7 +118,8 @@ export default function RoleRegisterScreen() {
         });
       }
 
-      const res = await axios.post("http://192.168.8.121:8080/api/User/registerUser", payload);
+      //const res = await axios.post("http://192.168.8.121:8080/api/User/registerUser", payload);
+      const res = await axios.post(`${AUTH_BASE}/api/User/registerUser`, payload, { timeout: 12000 });
 
       Alert.alert("Success", res.data.message);
       navigation.goBack();

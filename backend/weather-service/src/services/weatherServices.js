@@ -1,4 +1,4 @@
-// External API calls (OpenWeatherMap, StormGlass, WorldTides)
+// External API calls (OpenWeatherMap, Open Meteo, WorldTides)
 import axios from "axios";
 
 // Fetch current weather data (OpenWeather)
@@ -21,8 +21,27 @@ export const fetchWeatherData = async (lat, lon) => {
   }
 };
 
+// Fetch marine weather from Open-Meteo
+export const fetchMarineWeatherData = async (lat, lon) => {
+  try {
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&daily=wave_height_max,wave_direction_dominant,wind_wave_height_max,wind_wave_direction_dominant&hourly=wave_height,wave_direction,wave_period,ocean_current_velocity,ocean_current_direction&current=wave_height,wave_direction,wave_period,swell_wave_direction,ocean_current_velocity,sea_surface_temperature,sea_level_height_msl`;
+
+    const response = await axios.get(url);
+
+    return {
+      source: "OpenMeteoMarine",
+      current: response.data.current,
+      hourly: response.data.hourly,
+      daily: response.data.daily,
+    };
+  } catch (err) {
+    console.error("OpenMeteo Marine API error:", err.message);
+    return { source: "OpenMeteoMarine", error: err.message };
+  }
+};
+
 // Fetch marine data: waves, tides, currents (StormGlass)
-export const fetchStormGlassData = async (lat, lon) => {
+/*export const fetchStormGlassData = async (lat, lon) => {
   try {
     const apiKey = process.env.STORMGLASS_API_KEY;
     const url = `https://api.stormglass.io/v2/weather/point?lat=${lat}&lng=${lon}&params=waveHeight,windSpeed,currentSpeed`;
@@ -45,7 +64,7 @@ export const fetchStormGlassData = async (lat, lon) => {
 };
 
 // Fetch tide data (WorldTides)
-export const fetchTideData = async (lat, lon) => {
+/*export const fetchTideData = async (lat, lon) => {
   try {
     const apiKey = process.env.WORLDTIDES_API_KEY;
     const url = `https://www.worldtides.info/api/v3?extremes&lat=${lat}&lon=${lon}&key=${apiKey}`;
@@ -63,4 +82,4 @@ export const fetchTideData = async (lat, lon) => {
     console.error("WorldTides API error:", err.message);
     return { source: "WorldTides", error: err.message };
   }
-};
+};*/

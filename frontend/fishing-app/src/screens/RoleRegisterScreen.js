@@ -3,12 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from "reac
 import { useRoute, useNavigation } from "@react-navigation/native";
 import axios from "axios";
 
+const AUTH_BASE =
+  "https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/registration-service/v1.0";
+
 export default function RoleRegisterScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { role, language } = route.params || { role: "fisherman", language: "en" };
-  // console.log(role);
-  // console.log(language);
 
   // Common form state
   const [form, setForm] = useState({
@@ -24,6 +25,8 @@ export default function RoleRegisterScreen() {
     email: "",
     organization: "",
   });
+
+  const [showPassword, setShowPassword] = useState(false); // password toggle
 
   const handleChange = (key, value) => setForm({ ...form, [key]: value });
 
@@ -43,6 +46,8 @@ export default function RoleRegisterScreen() {
       organization: "Organization Name",
       submit: "Submit",
       heading: `${role.toUpperCase()} Registration`,
+      show: "Show",
+      hide: "Hide",
     },
     si: {
       name: "සම්පූර්ණ නම",
@@ -58,6 +63,8 @@ export default function RoleRegisterScreen() {
       organization: "ආයතන නාමය",
       submit: "යොමු කරන්න",
       heading: `${role.toUpperCase()} ලියාපදිංචිය`,
+      show: "පෙන්වන්න",
+      hide: "මැවිය යුතුය",
     },
     ta: {
       name: "முழு பெயர்",
@@ -73,10 +80,11 @@ export default function RoleRegisterScreen() {
       organization: "அமைப்பின் பெயர்",
       submit: "சமர்ப்பிக்கவும்",
       heading: `${role.toUpperCase()} பதிவு`,
+      show: "காண்பி",
+      hide: "மறை",
     },
   };
 
-  // Handle submit
   const handleSubmit = async () => {
     try {
       const payload = {
@@ -88,7 +96,6 @@ export default function RoleRegisterScreen() {
           language === "si" ? "Sinhala" : language === "ta" ? "Tamil" : "English",
       };
 
-      // Attach role-specific fields
       if (role === "fisherman") {
         Object.assign(payload, {
           nationalId: form.nationalId,
@@ -111,9 +118,9 @@ export default function RoleRegisterScreen() {
         });
       }
 
-      const res = await axios.post("http://192.168.8.121:8080/api/User/registerUser", payload);
+      //const res = await axios.post("http://192.168.8.121:8080/api/User/registerUser", payload);
+      const res = await axios.post(`${AUTH_BASE}/api/User/registerUser`, payload, { timeout: 12000 });
 
-      console.log("Response ✅:", res.data);
       Alert.alert("Success", res.data.message);
       navigation.goBack();
     } catch (err) {
@@ -143,13 +150,25 @@ export default function RoleRegisterScreen() {
         onChangeText={(t) => handleChange("phone", t)}
         keyboardType="phone-pad"
       />
-      <TextInput
-        className="border p-3 rounded mb-4"
-        placeholder={translations[language].password}
-        secureTextEntry
-        value={form.password}
-        onChangeText={(t) => handleChange("password", t)}
-      />
+
+      {/* Password with toggle */}
+      <View className="mb-4 relative">
+        <TextInput
+          className="border p-3 rounded"
+          placeholder={translations[language].password}
+          value={form.password}
+          onChangeText={(t) => handleChange("password", t)}
+          secureTextEntry={!showPassword}
+        />
+        <TouchableOpacity
+          className="absolute right-3 top-3"
+          onPress={() => setShowPassword(!showPassword)}
+        >
+          <Text className="text-blue-600 font-semibold">
+            {showPassword ? translations[language].hide : translations[language].show}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Role-Specific Fields */}
       {role === "fisherman" && (

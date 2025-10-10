@@ -8,7 +8,7 @@ const cardData = {
     { id: 1, title: "Registration & QR", bg: "bg-darkPurple", icon: IdCard },
     { id: 2, title: "Safety & Risk", bg: "bg-darkPurple", screen: "Risk", icon: ShieldAlert },
     { id: 3, title: "Weather Forecast", bg: "bg-darkPurple", screen: "Weather", icon: CloudSun },
-    { id: 4, title: "Live GPS & Tracking", bg: "bg-darkPurple", icon: Locate },
+    { id: 4, title: "Live GPS & Tracking", bg: "bg-darkPurple", screen: "GPS", icon: Locate },
     { id: 5, title: "Report Violation", bg: "bg-darkPurple", screen: "ReportViolation", icon: AlertTriangle },
     { id: 6, title: "Report Hazard", bg: "bg-darkPurple", screen: "ReportHazard", icon: Flame },
   ],

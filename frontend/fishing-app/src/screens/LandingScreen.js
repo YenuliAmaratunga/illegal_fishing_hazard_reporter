@@ -1,7 +1,39 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export default function LandingScreen({ navigation }) {
+ 
+  const[token,setToken] = useState("");
+  const[userName, setUserName] = useState("");
+  const[language,setLanguage] = useState("");
+
+useEffect(() => {
+    const loadAuth = async () => {
+      const authData = await AsyncStorage.getItem("authData");
+      console.log(authData);
+      if (authData) {
+        const { token,language,name} = JSON.parse(authData);
+        setToken(token);
+        setLanguage(language);
+        setUserName(name);
+      
+      }
+    };
+    loadAuth();
+  }, []);
+
+
+
+  const handleGetStarted = async () => {
+  if (token) {
+    navigation.replace("Fisherman", { language, token ,userName});
+  } else {
+    navigation.replace("MainTabs"); // or "Home", depending on what you want
+  }
+};
+
   return (
     <View className="flex-1 items-center justify-center" style={{ backgroundColor: "#D8D8FF" }}>
       {/* App Logo */}

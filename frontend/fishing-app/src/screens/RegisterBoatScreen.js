@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   ScrollView,
   Image,
   Pressable,
@@ -12,15 +11,19 @@ import {
   Platform,
   TouchableOpacity,
   Modal,
-  ActivityIndicator
+  ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function RegisterBoatScreen() {
+  const navigation = useNavigation();
   const [token, setToken] = useState(null);
   const [userId, setUserId] = useState(null);
   const [boatName, setBoatName] = useState("");
@@ -31,10 +34,9 @@ export default function RegisterBoatScreen() {
   const [engineType, setEngineType] = useState("");
   const [homePort, setHomePort] = useState("");
   const [insuranceNumber, setInsuranceNumber] = useState("");
-  const [safetyEquipment, setSafetyEquipment] = useState([]);
   const [images, setImages] = useState([]);
   const [license, setLicense] = useState(null);
-   const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadAuthData = async () => {
@@ -52,73 +54,39 @@ export default function RegisterBoatScreen() {
     loadAuthData();
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Permission Denied", "Please allow media access.");
-      }
-    })();
-  }, []);
-
-  const toggleEquipment = (item) => {
-    if (safetyEquipment.includes(item)) {
-      setSafetyEquipment(safetyEquipment.filter((eq) => eq !== item));
-    } else {
-      setSafetyEquipment([...safetyEquipment, item]);
-    }
-  };
-
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: false,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
-
     if (!result.canceled) {
-      setImages([...images, result.assets[0].uri]);
+      setImages((prev) => [...prev, result.assets[0].uri]);
     }
   };
 
   const takePhoto = async () => {
-    let result = await ImagePicker.launchCameraAsync({
+    const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 1,
     });
-
     if (!result.canceled) {
-      setImages([...images, result.assets[0].uri]);
+      setImages((prev) => [...prev, result.assets[0].uri]);
     }
   };
 
   const pickLicense = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
-
     if (!result.canceled) {
       setLicense(result.assets[0].uri);
     }
   };
 
-  const MyCheckbox = ({ label, checked, onPress }) => (
-    <Pressable
-      onPress={onPress}
-      className="flex-row items-center my-2"
-    >
-      <View
-        className={`w-5 h-5 border mr-3 rounded 
-        ${checked ? "bg-blue-700 border-blue-700" : "bg-white border-gray-400"}`}
-      />
-      <Text className="text-base text-gray-700">{label}</Text>
-    </Pressable>
-  );
+  const removeImage = (uri) => setImages((prev) => prev.filter((img) => img !== uri));
 
   const handleSubmit = async () => {
     try {
@@ -139,7 +107,6 @@ export default function RegisterBoatScreen() {
       formData.append("engineType", engineType);
       formData.append("homePort", homePort);
       formData.append("insuranceNumber", insuranceNumber);
-      formData.append("safetyEquipment", JSON.stringify(safetyEquipment));
 
       if (license) {
         formData.append("license", {
@@ -157,171 +124,239 @@ export default function RegisterBoatScreen() {
         });
       });
 
-      const response = await axios.post(
-        "http://192.168.8.121:8080/api/Boat/registerBoat",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.post("http://192.168.8.121:8080/api/Boat/registerBoat", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      Alert.alert("Success", response.data.message);
+      Alert.alert("✅ Success", "Boat registered successfully!", [
+        {
+          text: "OK",
+          onPress: () =>
+            navigation.replace("Fisherman", { language: "en", token: token, userId: userId }),
+        },
+      ]);
     } catch (err) {
       console.log(err);
       Alert.alert("Error", "Failed to register boat");
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1"
-      >
-        <ScrollView contentContainerClassName="p-5">
-          <Text className="text-lg font-semibold text-gray-800">Enter Boat Name</Text>
-          <TextInput
-            className="border border-gray-300 rounded-md p-3 mt-2 bg-white"
-            value={boatName}
-            onChangeText={setBoatName}
-            placeholder="Boat Name"
-          />
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ padding: 20 }}>
+          <Text style={styles.headerTitle}>🚤 Register Your Boat</Text>
 
-          <Text className="text-lg font-semibold text-gray-800 mt-4">Registration Number</Text>
-          <TextInput
-            className="border border-gray-300 rounded-md p-3 mt-2 bg-white"
-            value={registrationNumber}
-            onChangeText={setRegistrationNumber}
-            placeholder="Registration Number"
-          />
-
-          <Text className="text-lg font-semibold text-gray-800 mt-4">Boat Type</Text>
-          <Picker
-            selectedValue={boatType}
-            onValueChange={(val) => setBoatType(val)}
-            className="bg-white border border-gray-300 rounded-md"
-          >
-            <Picker.Item label="-- Select Boat Type --" value="" enabled={false} />
-            <Picker.Item label="Trawlers" value="Trawlers" />
-            <Picker.Item label="Tuna Longliners" value="TunaLongliners" />
-            <Picker.Item label="Gillnetters" value="Gillnetters" />
-            <Picker.Item label="Deep-Sea Longliners" value="DeepSeaLongliners" />
-          </Picker>
-
-          <Text className="text-lg font-semibold text-gray-800 mt-4">Length</Text>
-          <TextInput
-            className="border border-gray-300 rounded-md p-3 mt-2 bg-white"
-            value={length}
-            onChangeText={setLength}
-            placeholder="Length"
-          />
-
-          <Text className="text-lg font-semibold text-gray-800 mt-4">Capacity</Text>
-          <TextInput
-            className="border border-gray-300 rounded-md p-3 mt-2 bg-white"
-            value={capacity}
-            onChangeText={setCapacity}
-            placeholder="Capacity"
-          />
-
-          <Text className="text-lg font-semibold text-gray-800 mt-4">Engine Type</Text>
-          <Picker
-            selectedValue={engineType}
-            onValueChange={(val) => setEngineType(val)}
-            className="bg-white border border-gray-300 rounded-md"
-          >
-            <Picker.Item label="-- Select Engine Type --" value="" enabled={false} />
-            <Picker.Item label="Diesel Engine" value="Diesel" />
-            <Picker.Item label="Petrol Engine" value="Petrol" />
-            <Picker.Item label="Outboard Motor" value="Outboard" />
-            <Picker.Item label="Inboard Engine" value="Inboard" />
-            <Picker.Item label="Hybrid/Electric Engine" value="Hybrid" />
-          </Picker>
-
-          <Text className="text-lg font-semibold text-gray-800 mt-4">Home Port</Text>
-          <Picker
-            selectedValue={homePort}
-            onValueChange={(val) => setHomePort(val)}
-            className="bg-white border border-gray-300 rounded-md"
-          >
-            <Picker.Item label="-- Select Home Port --" value="" enabled={false} />
-            <Picker.Item label="Colombo" value="Colombo" />
-            <Picker.Item label="Negombo" value="Negombo" />
-            <Picker.Item label="Galle" value="Galle" />
-            <Picker.Item label="Matara (Dondra)" value="Matara" />
-            <Picker.Item label="Mirissa" value="Mirissa" />
-            <Picker.Item label="Trincomalee" value="Trincomalee" />
-          </Picker>
-
-          <Text className="text-lg font-semibold text-gray-800 mt-4">Insurance Number</Text>
-          <TextInput
-            className="border border-gray-300 rounded-md p-3 mt-2 bg-white"
-            value={insuranceNumber}
-            onChangeText={setInsuranceNumber}
-            placeholder="Insurance Number"
-          />
-
-          <Text className="text-lg font-semibold text-gray-800 mt-4">Safety Equipment</Text>
-          {["Life Jackets", "Life Buoys", "Fire Extinguishers", "First Aid Kit", "Flares", "VHF Radio"].map((item) => (
-            <MyCheckbox
-              key={item}
-              label={item}
-              checked={safetyEquipment.includes(item)}
-              onPress={() => toggleEquipment(item)}
+          {/* Card 1 */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Basic Information</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Boat Name"
+              value={boatName}
+              onChangeText={setBoatName}
             />
-          ))}
-
-          <Text className="text-lg font-semibold text-gray-800 mt-4">Boat Images</Text>
-          <View className="flex-row gap-3">
-            <Pressable
-              onPress={pickImage}
-              className="bg-blue-600 px-4 py-2 rounded-lg"
-            >
-              <Text className="text-white font-medium">Choose from Gallery</Text>
-            </Pressable>
-            <Pressable
-              onPress={takePhoto}
-              className="bg-green-600 px-4 py-2 rounded-lg"
-            >
-              <Text className="text-white font-medium">Take a Photo</Text>
-            </Pressable>
+            <Picker selectedValue={boatType} onValueChange={setBoatType} style={styles.picker}>
+              <Picker.Item label="Select Boat Type" value="" />
+              <Picker.Item label="Trawler" value="Trawler" />
+              <Picker.Item label="Longliner" value="Longliner" />
+              <Picker.Item label="Gillnetter" value="Gillnetter" />
+            </Picker>
+            <Picker selectedValue={engineType} onValueChange={setEngineType} style={styles.picker}>
+              <Picker.Item label="Select Engine Type" value="" />
+              <Picker.Item label="Diesel" value="Diesel" />
+              <Picker.Item label="Petrol" value="Petrol" />
+              <Picker.Item label="Outboard" value="Outboard" />
+            </Picker>
+            <Picker selectedValue={homePort} onValueChange={setHomePort} style={styles.picker}>
+              <Picker.Item label="Select Home Port" value="" />
+              <Picker.Item label="Colombo" value="Colombo" />
+              <Picker.Item label="Galle" value="Galle" />
+              <Picker.Item label="Trincomalee" value="Trincomalee" />
+            </Picker>
           </View>
-          {images.map((uri, index) => (
-            <Image key={index} source={{ uri }} className="w-48 h-48 rounded-lg mt-3" />
-          ))}
 
-          <Text className="text-lg font-semibold text-gray-800 mt-4">License Image</Text>
-          <Pressable
-            onPress={pickLicense}
-            className="bg-purple-600 px-4 py-2 rounded-lg"
-          >
-            <Text className="text-white font-medium">Choose License</Text>
-          </Pressable>
-          {license && <Image source={{ uri: license }} className="w-48 h-48 rounded-lg mt-3" />}
-
-          <View className="my-8">
-            <TouchableOpacity
-              onPress={handleSubmit}
-              className="bg-blue-700 py-3 rounded-xl shadow-lg"
-            >
-              <Text className="text-center text-white font-semibold text-lg">Register Boat</Text>
-            </TouchableOpacity>
+          {/* Card 2 */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Registration & Specs</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Registration Number"
+              value={registrationNumber}
+              onChangeText={setRegistrationNumber}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Length (ft)"
+              value={length}
+              onChangeText={setLength}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Capacity (persons)"
+              value={capacity}
+              onChangeText={setCapacity}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Insurance Policy Number"
+              value={insuranceNumber}
+              onChangeText={setInsuranceNumber}
+            />
           </View>
+
+          {/* Card 3 */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Images</Text>
+
+            <View style={styles.buttonRow}>
+              <Pressable style={styles.uploadBtn} onPress={pickImage}>
+                <Text style={styles.uploadText}>📁 From Gallery</Text>
+              </Pressable>
+              <Pressable style={styles.uploadBtn} onPress={takePhoto}>
+                <Text style={styles.uploadText}>📷 Take Photo</Text>
+              </Pressable>
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
+              {images.map((uri, i) => (
+                <View key={i} style={styles.imageWrapper}>
+                  <Image source={{ uri }} style={styles.image} />
+                  <Pressable style={styles.removeBtn} onPress={() => removeImage(uri)}>
+                    <Text style={{ color: "white" }}>✕</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </ScrollView>
+
+            <Text style={styles.sectionTitle}>License Image</Text>
+            <Pressable style={styles.uploadBtn} onPress={pickLicense}>
+              <Text style={styles.uploadText}>📄 Upload License</Text>
+            </Pressable>
+             {license ? (
+  <View style={[styles.imageWrapper, { marginTop: 10 }]}>
+    <Image source={{ uri: license }} style={[styles.image, { width: 300, height: 160 }]} />
+    <Pressable
+      style={[styles.removeBtn, { top: -4, right: -4 }]}
+      onPress={() => setLicense(null)}
+    >
+      <Text style={{ color: "white", fontWeight: "700" }}>✕</Text>
+    </Pressable>
+  </View>
+) : null}
+          </View>
+
+          <TouchableOpacity onPress={handleSubmit} activeOpacity={0.8} style={{ marginTop: 20 }}>
+            <LinearGradient colors={["#2563EB", "#1E3A8A"]} style={styles.submitBtn}>
+              <Text style={styles.submitText}>Register Boat</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+
       {loading && (
-        <Modal transparent={true} animationType="fade">
-          <View className="flex-1 bg-black/50 justify-center items-center">
+        <Modal transparent animationType="fade">
+          <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color="#fff" />
-            <Text className="text-white mt-4 text-lg">Submitting...</Text>
+            <Text style={styles.loadingText}>Submitting...</Text>
           </View>
         </Modal>
       )}
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#F9FAFB" },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1E3A8A",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 18,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#1E3A8A",
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+    fontSize: 15,
+    color: "#111827",
+  },
+  picker: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  uploadBtn: {
+    flex: 1,
+    backgroundColor: "#E0E7FF",
+    padding: 10,
+    marginHorizontal: 5,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  uploadText: {
+    color: "#1E3A8A",
+    fontWeight: "600",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  imageWrapper: { position: "relative", marginRight: 10 },
+  image: { width: 120, height: 120, borderRadius: 10 },
+  removeBtn: {
+    position: "absolute",
+    top: -1,
+    right: -1,
+    backgroundColor: "#EF4444",
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  submitBtn: {
+    borderRadius: 12,
+    paddingVertical: 15,
+  },
+  submitText: {
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  loadingOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: { color: "#fff", marginTop: 10, fontSize: 16 },
+});

@@ -56,6 +56,11 @@ export default function FishermanLandingScreen() {
 
           navigation.navigate("RegisterTrip");
         }
+
+        if(key == 'gear'){
+
+          navigation.navigate("Compass");
+        }
         // Add other navigation for other cards if needed
       }}>
               <View className="items-center">

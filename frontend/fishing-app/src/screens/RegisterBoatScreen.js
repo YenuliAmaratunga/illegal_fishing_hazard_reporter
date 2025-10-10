@@ -21,6 +21,8 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+const AUTH_BASE =
+  "https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/registration-service/v1.0";
 
 export default function RegisterBoatScreen() {
   const navigation = useNavigation();
@@ -124,7 +126,7 @@ export default function RegisterBoatScreen() {
         });
       });
 
-      await axios.post("http://192.168.8.121:8080/api/Boat/registerBoat", formData, {
+      await axios.post(`${AUTH_BASE}/registerBoat`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,

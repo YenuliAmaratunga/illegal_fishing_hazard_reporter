@@ -12,7 +12,7 @@ export default function RoleLoginScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { language, role } = route.params;
-  const navigation = useNavigation();
+
 
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");

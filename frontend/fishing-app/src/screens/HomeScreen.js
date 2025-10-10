@@ -1,18 +1,14 @@
-
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ImageBackground } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-// Card data
 import { IdCard, ShieldAlert, CloudSun, Locate, AlertTriangle, Flame } from "lucide-react-native";
-
 
 const cardData = {
   en: [
     { id: 1, title: "Registration & QR", bg: "bg-darkPurple", icon: IdCard },
     { id: 2, title: "Safety & Risk", bg: "bg-darkPurple", screen: "Risk", icon: ShieldAlert },
     { id: 3, title: "Weather Forecast", bg: "bg-darkPurple", screen: "Weather", icon: CloudSun },
-    { id: 4, title: "Live GPS & Tracking", bg: "bg-darkPurple", screen: "GPS", icon: Locate },
+    { id: 4, title: "Live GPS & Tracking", bg: "bg-darkPurple", icon: Locate },
     { id: 5, title: "Report Violation", bg: "bg-darkPurple", screen: "ReportViolation", icon: AlertTriangle },
     { id: 6, title: "Report Hazard", bg: "bg-darkPurple", screen: "ReportHazard", icon: Flame },
   ],
@@ -20,13 +16,13 @@ const cardData = {
     { id: 1, title: "ලියාපදිංචි කිරීම & QR", bg: "bg-lightGreen", icon: IdCard },
     { id: 2, title: "ආරක්ෂාව & අවදානම", bg: "bg-lightPeach", icon: ShieldAlert },
     { id: 3, title: "කාලගුණ පූර්ව අනුමාන", bg: "bg-regalBlue", icon: CloudSun },
-    { id: 4, title: "GPS & නිරීක්ෂණය", bg: "bg-seaGreen", screen: "GPS", icon: Locate },
+    { id: 4, title: "GPS & නිරීක්ෂණය", bg: "bg-seaGreen", icon: Locate },
   ],
   ta: [
     { id: 1, title: "பதிவு & QR", bg: "bg-lightGreen", icon: IdCard },
     { id: 2, title: "பாதுகாப்பு & ஆபத்து", bg: "bg-lightPeach", icon: ShieldAlert },
     { id: 3, title: "வானிலை முன்னறிவிப்பு", bg: "bg-regalBlue", icon: CloudSun },
-    { id: 4, title: "GPS & கண்காணிப்பு", bg: "bg-seaGreen", screen: "GPS", icon: Locate },
+    { id: 4, title: "GPS & கண்காணிப்பு", bg: "bg-seaGreen", icon: Locate },
   ],
 };
 
@@ -36,71 +32,10 @@ const labels = {
   ta: { register: "பதிவு", login: "உள்நுழையவும்", dashboard: "டாஷ்போர்டு" },
 };
 
-// Prompt text in three languages
-const languagePrompt = {
-  en: "Please select your preferred language",
-  si: "කරුණාකර ඔබ කැමති භාෂාව තෝරන්න",
-  ta: "தயவுசெய்து உங்கள் விருப்பமான மொழியை தேர்ந்தெடுக்கவும்",
-};
-
 export default function HomeScreen() {
   const navigation = useNavigation();
+  const [language, setLanguage] = useState("en");
 
-  const [language, setLanguage] = useState(null); // ask user first
-  const [username, setUsername] = useState(null);
-  const [token, setToken] = useState(null);
-
-  useEffect(() => {
-    const loadAuthData = async () => {
-      const authData = await AsyncStorage.getItem("authData");
-      if (authData) {
-        const { token, language, userName } = JSON.parse(authData);
-        setToken(token);
-        setLanguage(language);
-        setUsername(userName);
-      }
-    };
-    loadAuthData();
-  }, []);
-
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem("authData");
-    setUsername(null);
-    setToken(null);
-  };
-
-  // Language selection screen
-  if (!language) {
-    return (
-      <ImageBackground
-        source={require("../assets/Bg01.png")}
-        className="flex-1 items-center justify-center px-4"
-        resizeMode="cover"
-      >
-        <Text className="text-2xl font-bold text-darkBlue mb-6 text-center">
-          {languagePrompt.en}{"\n"}
-          {languagePrompt.si}{"\n"}
-          {languagePrompt.ta}
-        </Text>
-
-        <View className="flex-row space-x-4 mt-6">
-          {["en", "si", "ta"].map((lang) => (
-            <TouchableOpacity
-              key={lang}
-              onPress={() => setLanguage(lang)}
-              className="px-6 py-3 bg-regalBlue rounded-full shadow-lg"
-            >
-              <Text className="text-white font-semibold text-lg">{lang.toUpperCase()}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ImageBackground>
-    );
-  }
-
-
-
-  // Main dashboard
   return (
     <View className="flex-1 bg-white px-4 pt-12">
       {/* Header */}

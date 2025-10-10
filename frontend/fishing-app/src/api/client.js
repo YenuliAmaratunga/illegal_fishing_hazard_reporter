@@ -1,9 +1,12 @@
 // src/api/client.js
 import { GPS_BASE, POLICE_BASE } from "./config";
 
-const json = { "Content-Type": "application/json" };
+const json = {
+  "Content-Type": "application/json",
+  Accept: "application/json",
+};
 
-/* Safe JSON: if server returns HTML (404 page), log it so we see the problem */
+/* ---------- Safe JSON helpers ---------- */
 async function safeJson(res, label, url) {
   const txt = await res.text();
   try {
@@ -44,15 +47,25 @@ async function jpost(url, body, label) {
   return safeJson(r, label, url);
 }
 
-/* Fisherman app calls */
+/* ---------- RESTORED: path-based helpers your screens import ---------- */
+// KEEP these names/signatures — your Report* screens call them.
+export const gpsGet = (path) =>
+  jget(`${GPS_BASE}${path}`, "gpsGet");
+
+export const gpsPost = (path, body) =>
+  jpost(`${GPS_BASE}${path}`, body, "gpsPost");
+
+export const gpsPut = (path, body) =>
+  jput(`${GPS_BASE}${path}`, body, "gpsPut");
+
+/* ---------- Fisherman app calls ---------- */
 export const updateBoatLocation = (boatId, latitude, longitude) =>
   jpost(`${GPS_BASE}/api/gps/update-location`, { boatId, latitude, longitude }, "updateLocation");
 
 export const sendSOS = (boatId, latitude, longitude) =>
   jpost(`${GPS_BASE}/api/gps/sos`, { boatId, latitude, longitude }, "sendSOS");
 
-/* Marine Police – latest boats
-   Try the likely routes you showed in the GPS controller; return first that works. */
+/* ---------- Marine Police – latest boats ---------- */
 export const getLatestBoats = async () => {
   const candidates = [
     `${GPS_BASE}/api/gps/latest-locations`,
@@ -71,7 +84,7 @@ export const getLatestBoats = async () => {
   throw new Error("No locations endpoint responded");
 };
 
-/* Reports (used by both fisherman 'MyReports' and police dashboard) */
+/* ---------- Reports (used by fisherman + police) ---------- */
 export const getViolationReports = async () => {
   const urls = [
     `${GPS_BASE}/api/reports/violation-reports`,

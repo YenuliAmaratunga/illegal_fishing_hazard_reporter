@@ -18,6 +18,8 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { Magnetometer } from "expo-sensors";
 import { useNavigation } from "@react-navigation/native";
+const AUTH_BASE =
+  "https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/registration-service/v1.0";
 
 
 export default function TripRegistrationScreen() {
@@ -115,7 +117,7 @@ useEffect(() => {
       if (!fishermanId) return;
       try {
         const response = await axios.get(
-          `http://192.168.8.121:8080/api/Boat/viewBoatRegRequestsMade/${fishermanId}`
+          `${AUTH_BASE}/${fishermanId}`
         );
         setBoats(response.data);
       } catch (error) {
@@ -217,7 +219,7 @@ useEffect(() => {
       };
 
       const response = await axios.post(
-        "http://192.168.8.121:8080/api/Trip/registerTrip",
+        `${AUTH_BASE}/registerTrip`,
         data,
         {
           headers: {

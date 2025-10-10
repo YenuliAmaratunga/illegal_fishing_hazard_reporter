@@ -219,7 +219,7 @@ useEffect(() => {
       };
 
       const response = await axios.post(
-        "http://192.168.8.121:8080/api/Trip/registerTrip",
+        `${AUTH_BASE}/registerTrip`,
         data,
         {
           headers: {

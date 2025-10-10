@@ -1,33 +1,44 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
-import { useRoute, useNavigation} from "@react-navigation/native";
+ feature/register-page
+import { useRoute, useNavigation } from "@react-navigation/native";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const AUTH_BASE =
   "https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/registration-service/v1.0";
+
 
 export default function RoleLoginScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { language, role } = route.params;
+  const navigation = useNavigation();
 
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // added toggle
 
   const translations = {
     si: {
       phoneEntry: "ලියාපදිංචි කර ඇති දුරකථන අංකය ඇතුල් කරන්න",
       passwordEntry: "මුරපදය ඇතුල් කරන්න",
       login: "ඇතුල් වන්න",
+      show: "පෙන්වන්න",
+      hide: "මැවිය යුතුය",
     },
     en: {
       phoneEntry: "Enter registered phone number",
       passwordEntry: "Enter password",
       login: "Login",
+      show: "Show",
+      hide: "Hide",
     },
     ta: {
       phoneEntry: "பதிவு செய்யப்பட்ட தொலைபேசி எண்ணை உள்ளிடவும்",
       passwordEntry: "கடவுச்சொல்லை உள்ளிடவும்",
       login: "உள்நுழை",
+      show: "காண்பி",
+      hide: "மறை",
     },
   };
 
@@ -44,23 +55,22 @@ export default function RoleLoginScreen() {
         role,
       },{ timeout: 25000 });
 
-    console.log("Full response:", res.data);
+      const { token, message, userName ,userId} = res.data;
 
-  const { token, user, message } = res.data;
+      if (token) {
+        Alert.alert("Success", message || "Login successful");
+        await AsyncStorage.setItem(
+          "authData",
+          JSON.stringify({ token, language, userName,userId })
+        );
 
-  if (token) {
-    Alert.alert("Success", message || "Login successful");
-    console.log("JWT Token:", token);
-  } else {
-    Alert.alert("Error", message || "Login failed");
-  }
-    if (token) {
-        const effectiveRole = user?.role || role;
-        if (effectiveRole === "marine") {
+        if (role === "fisherman") {
+          navigation.navigate("Fisherman", { language, token,userId });
+        }if (role === "marine") {
           navigation.reset({ index: 0, routes: [{ name: "PoliceDashboard" }] });
-        } else {
-          navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
-        }
+        } 
+      } else {
+        Alert.alert("Error", message || "Login failed");
       }
     } catch (error) {
       console.error(error);
@@ -68,7 +78,6 @@ export default function RoleLoginScreen() {
     }
   };
 
-  
   return (
     <View className="flex-1 justify-center items-center bg-gray-100">
       <View className="w-11/12 bg-white p-6 rounded-2xl shadow-lg">
@@ -86,13 +95,24 @@ export default function RoleLoginScreen() {
         <Text className="text-lg font-semibold mb-2 text-gray-700">
           {translations[language].passwordEntry}
         </Text>
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholder={translations[language].passwordEntry}
-          className="border border-gray-300 rounded-lg px-3 py-2 mb-6"
-        />
+        {/* Password field with toggle */}
+        <View className="relative mb-6">
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            placeholder={translations[language].passwordEntry}
+            className="border border-gray-300 rounded-lg px-3 py-2"
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-3"
+          >
+            <Text className="text-blue-600 font-semibold">
+              {showPassword ? translations[language].hide : translations[language].show}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           onPress={handleSubmit}

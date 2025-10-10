@@ -17,8 +17,9 @@ module.exports = {
         accentText : "#6E8CFB"
       },
       fontFamily: {
-        poppins: "Poppins-Regular",
-        glasing: "Glasing-Regular",
+       sans: ['Inter', 'System'], // default sans font
+        heading: ['Poppins', 'System'],
+        body: ['Roboto', 'System'],
       },
     },
   },

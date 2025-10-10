@@ -47,7 +47,7 @@ const BoatSchema = new mongoose.Schema({
     uploadedAt: { type: Date, default: Date.now },
   },
 
-  status : {type : String, enum : ['pending', 'approved', 'rejected'], default : 'pending'}
+  status : {type : String, enum : ['pending', 'approved', 'rejected'], default : 'approved'}
 
 
 

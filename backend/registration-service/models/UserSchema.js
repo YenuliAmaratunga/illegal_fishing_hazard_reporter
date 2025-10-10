@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
   // NGO-specific
   organization: {type :String},
   
-  status: { type: String, enum: ['pending', 'approved'], default: 'pending' }
+  status: { type: String, enum: ['pending', 'approved'], default: 'approved' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

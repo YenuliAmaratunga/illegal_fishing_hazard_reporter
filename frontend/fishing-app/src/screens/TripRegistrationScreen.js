@@ -117,7 +117,7 @@ useEffect(() => {
       if (!fishermanId) return;
       try {
         const response = await axios.get(
-          `${AUTH_BASE}/${fishermanId}`
+          `${AUTH_BASE}/api/Boat/${fishermanId}`
         );
         setBoats(response.data);
       } catch (error) {
@@ -219,7 +219,7 @@ useEffect(() => {
       };
 
       const response = await axios.post(
-        `${AUTH_BASE}/registerTrip`,
+        `${AUTH_BASE}/api/Trip/registerTrip`,
         data,
         {
           headers: {

@@ -64,7 +64,7 @@ export default function RoleLoginScreen() {
         );
 
         if (role === "fisherman") {
-          navigation.navigate("Home"); 
+          navigation.navigate("MainTabs"); 
         }if (role === "marine") {
           navigation.reset({ index: 0, routes: [{ name: "PoliceDashboard" }] });
         } 

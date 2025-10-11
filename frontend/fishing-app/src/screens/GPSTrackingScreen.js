@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, Alert, Dimensions } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 
+import { gpsPost } from "../api/client";
+
 const { width, height } = Dimensions.get("window");
 
 export default function GPSTrackingScreen() {
@@ -10,7 +12,7 @@ export default function GPSTrackingScreen() {
   const [errorMsg, setErrorMsg] = useState(null);
   const [boats, setBoats] = useState([]);
 
-  // Get current location
+  //Get permission and fetch current device location
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -24,23 +26,47 @@ export default function GPSTrackingScreen() {
     })();
   }, []);
 
-  // SOS Button Handler
-  const handleSOS = async () => {
+  //Send current location to backend every 60 seconds
+  const sendLocationToBackend = async (coords) => {
     try {
-      Alert.alert(
-        "SOS Alert Sent!",
-        "Emergency alert sent to Marine Police! Help is on the way.",
-        [{ text: "OK" }]
-      );
+      await gpsPost("/api/gps/location", {
+        boatId: "BOAT_TEMP_001", //Temporary ID until login integration
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      });
+      console.log("✅ Location sent:", coords);
     } catch (error) {
-      Alert.alert("Error", "Failed to send SOS alert");
+      console.log("❌ Failed to send location:", error.message);
     }
   };
 
-  const sendLocationToBackend = async (coords) => {
-    console.log("Sending location to backend:", coords);
+  useEffect(() => {
+    if (!location) return;
+    const interval = setInterval(() => {
+      sendLocationToBackend(location.coords);
+    }, 60000); //every 60 seconds
+    return () => clearInterval(interval);
+  }, [location]);
+
+  // SOS Button Handler
+  const handleSOS = async () => {
+    try {
+      await gpsPost("/api/gps/sos", {
+        boatId: "BOAT_TEMP_001",
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      Alert.alert(
+        "SOS Alert Sent!",
+        "Emergency alert sent to Marine Police! 🚨"
+      );
+    } catch (error) {
+      Alert.alert("Error", "Failed to send SOS alert");
+      console.log("❌ SOS error:", error.message);
+    }
   };
 
+  //Confirmation dialog before sending SOS
   const confirmSOS = () => {
     Alert.alert(
       "Confirm SOS",
@@ -110,16 +136,15 @@ export default function GPSTrackingScreen() {
         </Text>
       </View>
 
-      {/* SOS Button */}
+      {/* SOS Warning */}
       <Text className="text-darkBlue mt-2">
         ⚠️ SOS is for real emergencies only. False reports may lead to
         penalties.
       </Text>
+      {/* SOS Button */}
       <TouchableOpacity
         className="bg-red-600 py-4 mx-4 my-4 rounded-2xl items-center"
-        onPress={confirmSOS} // <-- now shows confirmation first
-        onLongPress={confirmSOS} // optional: also allow long-press to confirm
-        delayLongPress={350}
+        onPress={confirmSOS} //shows confirmation first
       >
         <Text className="text-white text-xl font-bold">🚨 SOS EMERGENCY</Text>
       </TouchableOpacity>

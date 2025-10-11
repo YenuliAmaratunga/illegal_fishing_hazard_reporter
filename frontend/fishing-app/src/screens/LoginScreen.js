@@ -7,7 +7,8 @@ export default function LoginScreen(){
 
 
     const route = useRoute();
-    const {language} = route.params;
+    //const {language} = route.params;
+     const language = route.params?.language ?? "en";
      const navigation = useNavigation();
 
     const translation = {

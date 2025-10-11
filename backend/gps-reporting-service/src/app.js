@@ -9,6 +9,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// debug: log every request path that actually reaches Express
+app.use((req, _res, next) => {
+  console.log(`[gps] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+
 //Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Connected to MongoDB'))
@@ -25,7 +32,7 @@ app.get('/health', (_, res) => res.status(200).send('OK'));
 //Routes
 app.use('/api/gps', require('./routes/gpsRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes')); 
-
-app.use('/gps', require('./routes/gpsRoutes'));
+app.use('/gps', require('./routes/gpsRoutes'));          // also plain
+app.use('/reports', require('./routes/reportRoutes'));
 
 module.exports = app;

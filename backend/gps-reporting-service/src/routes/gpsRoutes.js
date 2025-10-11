@@ -8,6 +8,8 @@ const {
     getLatestBoatStatuses
 } = require('../controllers/gpsController');
 
+router.get('/ping', (_req, res) => res.send('gps routes OK')); // debug
+
 // GPS Tracking Routes
 router.post('/location', updateLocation);
 router.post('/update-location', updateLocation); 

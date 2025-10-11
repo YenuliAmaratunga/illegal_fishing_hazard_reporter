@@ -11,6 +11,8 @@ const {
     resolveAlertByBoat
 } = require('../controllers/policeController');
 
+router.get('/ping', (_req, res) => res.send('police routes OK')); // debug
+
 // Alert Routes
 router.get('/alerts', getActiveAlerts);
 router.put('/alerts/:alertId/resolve', resolveAlert);

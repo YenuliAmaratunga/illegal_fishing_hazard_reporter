@@ -117,7 +117,7 @@ useEffect(() => {
       if (!fishermanId) return;
       try {
         const response = await axios.get(
-          `${AUTH_BASE}/api/Boat/${fishermanId}`
+          `${AUTH_BASE}/api/Boat/viewBoatRegRequestsMade/${fishermanId}`
         );
         setBoats(response.data);
       } catch (error) {

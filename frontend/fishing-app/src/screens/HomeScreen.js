@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import {
-  IdCard,
-  ShieldAlert,
-  CloudSun,
-  Locate,
-  AlertTriangle,
-  Flame,
-} from "lucide-react-native";
+import { IdCard, ShieldAlert, CloudSun, Locate, AlertTriangle, Flame, ClipboardList} from "lucide-react-native";
 
 const cardData = {
   en: [

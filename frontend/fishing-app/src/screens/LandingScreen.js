@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export default function LandingScreen({ navigation }) {
   const [language, setLanguage] = useState("en");

@@ -57,7 +57,7 @@ export default function HomeScreen() {
             onPress={() => setLanguage(lang)}
             className={`px-4 py-2 border ${
               idx === 0 ? "rounded-l-lg" : idx === 2 ? "rounded-r-lg" : ""
-            } ${language === lang ? "bg-regalBlue" : "bg-white border-gray-300"}`}
+            } ${language === lang ? "bg-[#000435]" : "bg-white border-gray-300"}`}
           >
             <Text className={language === lang ? "text-white font-semibold" : "text-black font-semibold"}>
               {lang.toUpperCase()}
@@ -65,6 +65,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
 
       {/* Grid of cards */}
       <View className="flex-row flex-wrap justify-between">

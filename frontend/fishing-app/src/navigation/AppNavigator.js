@@ -33,6 +33,7 @@ import MyReports from "../screens/MyReports";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+
 // Bottom Tabs
 function MainTabs() {
   return (
@@ -86,6 +87,7 @@ export default function AppNavigator() {
         <Stack.Screen name="PoliceDashboard" component={PoliceDashboard} />
         <Stack.Screen name="RegisterBoat" component={RegisterBoatScreen} />
         <Stack.Screen name="TripRegistration" component={TripRegistrationScreen} />
+        <Stack.Screen name = "Fisherman" component={FishermanLandingScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

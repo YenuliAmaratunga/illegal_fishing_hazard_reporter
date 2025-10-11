@@ -5,7 +5,7 @@ import { IdCard, ShieldAlert, CloudSun, Locate, AlertTriangle, Flame, ClipboardL
 
 const cardData = {
   en: [
-    { id: 1, title: "Registration & QR", bg: "bg-darkPurple",screen: "RegisterBoat", icon: IdCard },
+    { id: 1, title: "Registration & QR", bg: "bg-darkPurple",screen: "Fisherman", icon: IdCard },
     { id: 2, title: "Safety & Risk", bg: "bg-darkPurple", screen: "Risk", icon: ShieldAlert },
     { id: 3, title: "Weather Forecast", bg: "bg-darkPurple", screen: "Weather", icon: CloudSun },
     { id: 4, title: "SOS & Reporting", bg: "bg-darkPurple", screen: "GPS", icon: Locate }

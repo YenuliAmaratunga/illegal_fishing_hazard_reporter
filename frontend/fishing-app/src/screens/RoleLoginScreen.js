@@ -73,8 +73,7 @@ export default function RoleLoginScreen() {
       }
     } catch (error) {
       console.error(error);
-      //Alert.alert("Error", "Something went wrong");
-      Alert.alert("Error", message || "Login failed");
+      Alert.alert("Error", "Something went wrong");
     }
   };
 
@@ -118,7 +117,7 @@ export default function RoleLoginScreen() {
 
         <TouchableOpacity
           onPress={handleSubmit}
-          className="bg-blue-600 py-3 rounded-xl"
+          className="bg-blue py-3 rounded-xl"
         >
           <Text className="text-white text-center font-bold text-lg">
             {translations[language].login}

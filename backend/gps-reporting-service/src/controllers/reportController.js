@@ -181,3 +181,48 @@ exports.resolveHazardReport = async (req, res) => {
         });
     }
 };
+
+exports.resolveViolationReport = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const report = await ViolationReport.findByIdAndUpdate(
+      reportId,
+      { status: 'resolved' },
+      { new: true }
+    );
+    if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
+    res.json({ success: true, message: 'Violation resolved', data: report });
+  } catch (e) {
+    console.error('Error resolving violation:', e);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+
+// GET /api/reports/my?reporterId=123
+exports.getMyReports = async (req, res) => {
+  try {
+    const { reporterId } = req.query;
+    if (!reporterId) {
+      return res.status(400).json({ success: false, message: "reporterId is required" });
+    }
+
+    // find by boatId or reporterId across both collections
+    const violations = await ViolationReport.find({
+      $or: [{ boatId: reporterId }, { reporterId }],
+    }).sort({ timestamp: -1 });
+
+    const hazards = await HazardReport.find({
+      $or: [{ boatId: reporterId }, { reporterId }],
+    }).sort({ timestamp: -1 });
+
+    const combined = [...violations, ...hazards].sort(
+      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+    );
+
+    res.json({ success: true, data: combined });
+  } catch (err) {
+    console.error("Error fetching my reports:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

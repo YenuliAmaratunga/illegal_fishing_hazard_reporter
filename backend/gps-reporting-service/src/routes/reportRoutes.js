@@ -6,13 +6,18 @@ const {
     verifyViolationReport,
     reportHazard,
     getHazardReports,
-    resolveHazardReport
+    resolveHazardReport,
+    resolveViolationReport,
+    getMyReports
 } = require('../controllers/reportController');
+
+router.get("/my", getMyReports);
 
 // Violation Report Routes
 router.post('/violation-reports', reportViolation);
 router.get('/violation-reports', getViolationReports);
 router.put('/violation-reports/:reportId/verify', verifyViolationReport);
+router.put('/violation-reports/:reportId/resolve', resolveViolationReport);
 
 // Hazard Report Routes
 router.post('/hazard-reports', reportHazard);

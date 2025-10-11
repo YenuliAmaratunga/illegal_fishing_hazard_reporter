@@ -1,7 +1,3 @@
-// src/screens/gps-tracking.js
-// keeps: compass, recenter, custom boat icon, SOS + Cancel, New Report & My Reports
-// removes: allowed zone polygon/banner
-
 import React, { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -21,7 +17,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   updateBoatLocation,
   sendSOS as apiSendSOS,
-  cancelSOS as apiCancelSOS, // <-- added
 } from "../api/client";
 
 const { width, height } = Dimensions.get("window");
@@ -30,9 +25,9 @@ export default function GPSTrackingScreen({ navigation }) {
   const mapRef = useRef(null);
   const pulse = useRef(new Animated.Value(1)).current;
 
-  const [boatId, setBoatId] = useState(null);   // nationalId stored as boatId in BE
-  const [myPos, setMyPos] = useState(null);     // { latitude, longitude }
-  const [sosActive, setSosActive] = useState(false);
+  const [boatId, setBoatId] = useState(null); // nationalId stored as boatId in BE
+  const [myPos, setMyPos] = useState(null); // { latitude, longitude }
+  //const [sosActive, setSosActive] = useState(false);
   const [sending, setSending] = useState(false);
 
   // read auth once to get boatId (nationalId)
@@ -108,7 +103,10 @@ export default function GPSTrackingScreen({ navigation }) {
         if (busy) return;
         busy = true;
         const pos = await Location.getCurrentPositionAsync({});
-        const coord = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        const coord = {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        };
         setMyPos(coord);
         console.log("[gps] tick update →", coord);
         await updateBoatLocation(boatId, coord.latitude, coord.longitude);
@@ -151,28 +149,10 @@ export default function GPSTrackingScreen({ navigation }) {
     try {
       console.log("[gps] SOS →", { boatId, ...myPos });
       await apiSendSOS(boatId, myPos.latitude, myPos.longitude);
-      setSosActive(true);
       Alert.alert("SOS sent", "Marine Police have been notified. Stay safe.");
     } catch (e) {
       console.log("[gps] SOS error:", e?.message);
       Alert.alert("Error", "Failed to send SOS.");
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const doCancelSOS = async () => {
-    if (!sosActive || !boatId || !myPos) return;
-    if (sending) return;
-    setSending(true);
-    try {
-      console.log("[gps] Cancel SOS →", { boatId, ...myPos });
-      await apiCancelSOS(boatId, myPos.latitude, myPos.longitude);
-      setSosActive(false);
-      Alert.alert("SOS canceled", "Your SOS has been canceled.");
-    } catch (e) {
-      console.log("[gps] cancel SOS error:", e?.message);
-      Alert.alert("Error", "Failed to cancel SOS.");
     } finally {
       setSending(false);
     }
@@ -184,20 +164,21 @@ export default function GPSTrackingScreen({ navigation }) {
         <Text className="text-white text-lg">Getting your location…</Text>
       </View>
     );
-    }
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white" style={{ paddingTop: 6 }}>
       {/* Header */}
-      <View className="px-4 pb-2">
-        <View className="flex-row items-center justify-between">
-          <View>
-            <Text className="text-[18px] font-extrabold text-blue">Report Center</Text>
-            <Text className="text-[12px] text-[#6E8CFB99]">SOS • New Report • My Reports</Text>
-          </View>
-          <View className="bg-lightPurple/80 rounded-full px-3 py-1">
-            <Text className="text-blue text-[11px] font-semibold">Live</Text>
-          </View>
+      <View className="px-4 pb-2 items-center">
+        <Text className="text-[20px] font-extrabold text-blue text-center">   
+          Report Center
+        </Text>
+        <Text className="text-[12px] text-[#6E8CFB99] text-center mt-0.5">
+          SOS • New Report • My Reports
+        </Text>
+          
+        <View className="bg-lightPurple/80 rounded-full px-3 py-1 mt-2">
+          <Text className="text-blue text-[11px] font-semibold">Live</Text>
         </View>
       </View>
 
@@ -217,8 +198,8 @@ export default function GPSTrackingScreen({ navigation }) {
         <MapView
           ref={mapRef}
           style={{ width: "100%", height: "100%" }}
-          showsUserLocation={false}  // no blue dot
-          showsCompass                 // keep the compass
+          showsUserLocation={false} // no blue dot
+          showsCompass // keep the compass
           initialRegion={{
             latitude: myPos.latitude,
             longitude: myPos.longitude,
@@ -231,28 +212,42 @@ export default function GPSTrackingScreen({ navigation }) {
           <Marker coordinate={myPos} title="Your Boat">
             <View className="items-center">
               <View className="w-9 h-9 rounded-full bg-white items-center justify-center shadow">
-                <MaterialCommunityIcons name="ferry" size={20} color="#3C467B" />
+                <MaterialCommunityIcons
+                  name="ferry"
+                  size={20}
+                  color="#3C467B"
+                />
               </View>
               <Text className="text-[10px] mt-1 text-blue">You</Text>
             </View>
           </Marker>
         </MapView>
 
-        {/* Recenter FAB */}
+        {/* Recenter*/}
         <TouchableOpacity
           onPress={recenter}
-          className="absolute right-3 top-3 bg-white rounded-full w-11 h-11 items-center justify-center"
-          style={{ shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 6, elevation: 4 }}
+          className="absolute right-3 bottom-3 bg-white rounded-full w-12 h-12 items-center justify-center"
+          style={{
+            shadowColor: "#000",
+            shadowOpacity: 0.15,
+            shadowRadius: 6,
+            elevation: 4,
+          }}
           activeOpacity={0.85}
         >
-          <MaterialCommunityIcons name="crosshairs-gps" size={22} color="#3C467B" />
+          <MaterialCommunityIcons
+            name="crosshairs-gps"
+            size={22}
+            color="#3C467B"
+          />
         </TouchableOpacity>
       </View>
 
       {/* Coords */}
       <View className="px-4 mt-2">
         <Text className="text-darkBlue font-semibold">
-          Your Position: {myPos.latitude.toFixed(6)}, {myPos.longitude.toFixed(6)}
+          Your Position: {myPos.latitude.toFixed(6)},{" "}
+          {myPos.longitude.toFixed(6)}
         </Text>
       </View>
 
@@ -264,24 +259,22 @@ export default function GPSTrackingScreen({ navigation }) {
             disabled={sending}
             activeOpacity={0.9}
             className="bg-red-600 rounded-2xl py-4 items-center"
-            style={{ shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 }}
+            style={{
+              shadowColor: "#000",
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              elevation: 5,
+            }}
           >
-            <Text className="text-white text-[18px] font-extrabold">🚨 SOS – EMERGENCY</Text>
+            <Text className="text-white text-[18px] font-extrabold">
+              🚨 SOS – EMERGENCY
+            </Text>
             <Text className="text-white/80 text-[12px] mt-1">
               Sends your live location to Marine Police
             </Text>
           </TouchableOpacity>
         </Animated.View>
 
-        {sosActive && (
-          <TouchableOpacity
-            onPress={doCancelSOS}
-            disabled={sending}
-            className="mt-3 bg-white border border-red-400 rounded-2xl py-3 items-center"
-          >
-            <Text className="text-red-600 font-bold">Cancel SOS</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Secondary actions */}
@@ -290,21 +283,43 @@ export default function GPSTrackingScreen({ navigation }) {
           <TouchableOpacity
             onPress={() => navigation.navigate("ReportTypePicker")}
             className="flex-1 mr-3 bg-white border border-blueLight rounded-2xl py-4 items-center"
-            style={{ shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 6, elevation: 3 }}
+            style={{
+              shadowColor: "#000",
+              shadowOpacity: 0.1,
+              shadowRadius: 6,
+              elevation: 3,
+            }}
           >
-            <MaterialCommunityIcons name="note-plus" size={20} color="#50589C" />
+            <MaterialCommunityIcons
+              name="note-plus"
+              size={20}
+              color="#50589C"
+            />
             <Text className="text-blue font-bold mt-1">New Report</Text>
-            <Text className="text-[#6E8CFB99] text-[11px] mt-0.5">Hazard or Violation</Text>
+            <Text className="text-[#6E8CFB99] text-[11px] mt-0.5">
+              Hazard or Violation
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => navigation.navigate("MyReports")}
             className="flex-1 ml-3 bg-white border border-blueLight rounded-2xl py-4 items-center"
-            style={{ shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 6, elevation: 3 }}
+            style={{
+              shadowColor: "#000",
+              shadowOpacity: 0.1,
+              shadowRadius: 6,
+              elevation: 3,
+            }}
           >
-            <MaterialCommunityIcons name="folder-account" size={20} color="#50589C" />
+            <MaterialCommunityIcons
+              name="folder-account"
+              size={20}
+              color="#50589C"
+            />
             <Text className="text-blue font-bold mt-1">My Reports</Text>
-            <Text className="text-[#6E8CFB99] text-[11px] mt-0.5">View & edit</Text>
+            <Text className="text-[#6E8CFB99] text-[11px] mt-0.5">
+              View & edit
+            </Text>
           </TouchableOpacity>
         </View>
 

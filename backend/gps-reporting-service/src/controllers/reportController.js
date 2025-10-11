@@ -226,3 +226,88 @@ exports.getMyReports = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+//PUT /api/reports/violation-reports/:reportId
+exports.updateViolationReport = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+
+    // Only allow these fields to be updated
+    const {
+      reporterId,
+      boatId,
+      violationType,
+      description,
+      location,      // { latitude, longitude }
+      evidence,      // { imageUrl: string[], videoUrl: string[] }
+      status,        // 'pending' | 'verified' | 'resolved'
+    } = req.body || {};
+
+    const update = {
+      ...(reporterId !== undefined && { reporterId }),
+      ...(boatId !== undefined && { boatId }),
+      ...(violationType !== undefined && { violationType }),
+      ...(description !== undefined && { description }),
+      ...(location !== undefined && { location }),
+      ...(evidence !== undefined && { evidence }),
+      ...(status !== undefined && { status }),
+    };
+
+    const updated = await ViolationReport.findByIdAndUpdate(
+      reportId,
+      update,
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Violation report not found' });
+    }
+
+    return res.json({ success: true, message: 'Violation report updated', data: updated });
+  } catch (err) {
+    console.error('updateViolationReport error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+//PUT /api/reports/hazard-reports/:reportId
+exports.updateHazardReport = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+
+    const {
+      reporterId,
+      hazardType,    // 'debris' | 'oil spill' | 'weather' | 'navigation hazard' | 'other'
+      description,
+      location,      // { latitude, longitude }
+      severity,      // 'low' | 'medium' | 'high' | 'critical'
+      evidence,      // { imageUrl: string[], videoUrl: string[] }
+      status,        // 'pending' | 'resolved'
+    } = req.body || {};
+
+    const update = {
+      ...(reporterId !== undefined && { reporterId }),
+      ...(hazardType !== undefined && { hazardType }),
+      ...(description !== undefined && { description }),
+      ...(location !== undefined && { location }),
+      ...(severity !== undefined && { severity }),
+      ...(evidence !== undefined && { evidence }),
+      ...(status !== undefined && { status }),
+    };
+
+    const updated = await HazardReport.findByIdAndUpdate(
+      reportId,
+      update,
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Hazard report not found' });
+    }
+
+    return res.json({ success: true, message: 'Hazard report updated', data: updated });
+  } catch (err) {
+    console.error('updateHazardReport error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};

@@ -64,7 +64,7 @@ export default function RoleLoginScreen() {
         );
 
         if (role === "fisherman") {
-          navigation.navigate("Fisherman", { language, token,userId });
+          navigation.navigate("Home"); 
         }if (role === "marine") {
           navigation.reset({ index: 0, routes: [{ name: "PoliceDashboard" }] });
         } 
@@ -76,6 +76,8 @@ export default function RoleLoginScreen() {
       Alert.alert("Error", "Something went wrong");
     }
   };
+
+  // { language, token,userId }
 
   return (
     <View className="flex-1 justify-center items-center bg-gray-100">

@@ -9,8 +9,9 @@ import {
 } from "react-native";
 import MapView, { Marker, Polyline, Polygon } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Animatable from "react-native-animatable";
 import axios from "axios";
-import zones from "../assets/marineZones.json"; // 🐢 Static Marine Protected Areas (MPAs)
+import zones from "../assets/marineZones.json"; // Static Marine Protected Areas (MPAs)
 
 // 🔹 Utility: check if point is inside polygon
 const isPointInPolygon = (point, polygon) => {
@@ -41,7 +42,7 @@ export default function RouteHazardMapScreen() {
   const pulseRefs = useRef({});
 
   // 🌍 TEMP: Hardcoded start & end — replace with dynamic user start later
-  const start = { lat: 6.9060, lon: 79.8763 }; // Near Thimbirigasyaya
+  const start = { lat: 6.906, lon: 79.8763 }; // Near Thimbirigasyaya
   const end = { lat: 6.0, lon: 80.25 }; // Example destination
   const routeCoords = [
     { latitude: start.lat, longitude: start.lon },
@@ -121,7 +122,10 @@ export default function RouteHazardMapScreen() {
             const minLon = Math.min(start.lon, end.lon);
             const maxLon = Math.max(start.lon, end.lon);
             return (
-              h.lat >= minLat && h.lat <= maxLat && h.lon >= minLon && h.lon <= maxLon
+              h.lat >= minLat &&
+              h.lat <= maxLat &&
+              h.lon >= minLon &&
+              h.lon <= maxLon
             );
           });
 
@@ -162,11 +166,9 @@ export default function RouteHazardMapScreen() {
     ).start();
   };
 
-  
   const crossesRestrictedZone = zones.some((zone) =>
     doesRouteCrossZone(routeCoords, zone.coordinates)
   );
-
 
   const computeRisk = () => {
     const totalSeverity = hazards.reduce(
@@ -184,14 +186,35 @@ export default function RouteHazardMapScreen() {
   if (loading)
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#3C467B" />
-        <Text className="text-blue mt-3 font-semibold">
+        <Animatable.View
+          animation="pulse"
+          iterationCount="infinite"
+          duration={1500}
+        >
+          <MaterialCommunityIcons
+            name="map-search-outline"
+            size={70}
+            color="#3C467B"
+          />
+        </Animatable.View>
+
+        <Animatable.Text
+          animation="fadeIn"
+          iterationCount="infinite"
+          duration={2000}
+          className="text-blue mt-3 font-semibold text-lg"
+        >
           Loading hazard data...
-        </Text>
+        </Animatable.Text>
+
+        <ActivityIndicator
+          size="large"
+          color="#636CCB"
+          style={{ marginTop: 10 }}
+        />
       </View>
     );
 
-  
   const getHazardVisuals = (type) => {
     switch (type) {
       case "storm":
@@ -301,8 +324,8 @@ export default function RouteHazardMapScreen() {
                 {selectedHazard.type === "storm"
                   ? "⚡ Storm Zone"
                   : selectedHazard.type === "waves"
-                  ? "🌊 High Wave Area"
-                  : "🌧️ Rainy Zone"}
+                    ? "🌊 High Wave Area"
+                    : "🌧️ Rainy Zone"}
               </Text>
               <Text
                 className="text-gray-500 text-lg"

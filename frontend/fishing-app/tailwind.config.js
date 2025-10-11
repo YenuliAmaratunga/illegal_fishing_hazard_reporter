@@ -7,18 +7,20 @@ module.exports = {
       colors: {
         blue: "#3C467B", 
         blueLight: "#50589C", 
-        darkBlue: "000435",
+        darkBlue: "#000435",
         darkPurple: "#636CCB",
         purple: "#6E8CFB",
         lightPurple: "#D8D8FF",
         accentPurple : "#BABCFF",
         primaryText :"#E8EAFF",
         secondaryText : "#B7B9E0",
-        accentText : "#6E8CFB"
+        accentText : "#6E8CFB",
+        white : "#FFFFFF"
       },
       fontFamily: {
-        poppins: "Poppins-Regular",
-        glasing: "Glasing-Regular",
+       sans: ['Inter', 'System'], // default sans font
+        heading: ['Poppins', 'System'],
+        body: ['Roboto', 'System'],
       },
     },
   },

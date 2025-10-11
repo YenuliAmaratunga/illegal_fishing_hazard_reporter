@@ -18,7 +18,12 @@ import RegisterScreen from "../screens/RegisterScreen";
 import RoleRegisterScreen from "../screens/RoleRegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RoleLoginScreen from "../screens/RoleLoginScreen";
+import FishermanLandingScreen from "../screens/FishermanLandingScreen";
+import RegisterBoatScreen from "../screens/RegisterBoatScreen";
+import TripRegistrationScreen from "../screens/TripRegistrationScreen";
+import Compass from "../screens/Compass";
 import RouteHazardMapScreen from "../screens/RouteHazardMapScreen";
+import PoliceDashboard from "../screens/PoliceDashboard";
 
 import ReportHubScreen from "../screens/ReportHubScreen";
 import ReportTypePicker from "../screens/ReportTypePicker";

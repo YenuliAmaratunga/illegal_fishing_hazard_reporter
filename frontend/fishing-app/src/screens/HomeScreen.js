@@ -5,30 +5,30 @@ import { IdCard, ShieldAlert, CloudSun, Locate, AlertTriangle, Flame, ClipboardL
 
 const cardData = {
   en: [
-    { id: 1, title: "Registration & QR", bg: "bg-darkPurple", icon: IdCard },
+    { id: 1, title: "Registration & QR", bg: "bg-darkPurple",screen: "RegisterBoat", icon: IdCard },
     { id: 2, title: "Safety & Risk", bg: "bg-darkPurple", screen: "Risk", icon: ShieldAlert },
     { id: 3, title: "Weather Forecast", bg: "bg-darkPurple", screen: "Weather", icon: CloudSun },
-    { id: 4, title: "Live GPS & Tracking", bg: "bg-darkPurple", screen: "GPS", icon: Locate },
-    { id: 5, title: "Report Centre", bg: "bg-darkPurple", screen: "ReportHub", icon: ClipboardList },
+    { id: 4, title: "SOS & Reporting", bg: "bg-darkPurple", screen: "GPS", icon: Locate }
+
   ],
   si: [
     { id: 1, title: "ලියාපදිංචි කිරීම & QR", bg: "bg-lightGreen", icon: IdCard },
     { id: 2, title: "ආරක්ෂාව & අවදානම", bg: "bg-lightPeach", icon: ShieldAlert },
     { id: 3, title: "කාලගුණ පූර්ව අනුමාන", bg: "bg-regalBlue", icon: CloudSun },
-    { id: 4, title: "GPS & නිරීක්ෂණය", bg: "bg-seaGreen", screen: "GPS", icon: Locate },
+    { id: 4, title: "GPS & නිරීක්ෂණය", bg: "bg-seaGreen", icon: Locate },
   ],
   ta: [
     { id: 1, title: "பதிவு & QR", bg: "bg-lightGreen", icon: IdCard },
     { id: 2, title: "பாதுகாப்பு & ஆபத்து", bg: "bg-lightPeach", icon: ShieldAlert },
     { id: 3, title: "வானிலை முன்னறிவிப்பு", bg: "bg-regalBlue", icon: CloudSun },
-    { id: 4, title: "GPS & கண்காணிப்பு", bg: "bg-seaGreen", screen: "GPS", icon: Locate },
+    { id: 4, title: "GPS & கண்காணிப்பு", bg: "bg-seaGreen", icon: Locate },
   ],
 };
 
 const labels = {
-  en: { register: "Register", login: "Login", dashboard: "Dashboard" },
-  si: { register: "ලියාපදිංචි", login: "ලොග් ඉන් වන්න", dashboard: "ඩැෂ්බෝර්ඩ්" },
-  ta: { register: "பதிவு", login: "உள்நுழையவும்", dashboard: "டாஷ்போர்டு" },
+  en: { dashboard: "Dashboard" },
+  si: { dashboard: "ඩැෂ්බෝර්ඩ්" },
+  ta: { dashboard: "டாஷ்போர்டு" },
 };
 
 export default function HomeScreen() {
@@ -42,43 +42,23 @@ export default function HomeScreen() {
         {labels[language].dashboard}
       </Text>
 
-      {/* Auth buttons */}
-      <View className="flex-row justify-end space-x-2 mb-6">
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Register", { language })}
-          className="bg-regalBlue px-3 py-1.5 rounded-lg"
-        >
-          <Text className="text-blue font-semibold text-sm">
-            {labels[language].register}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Login", { language })}
-          className="bg-regalBlue px-3 py-1.5 rounded-lg"
-        >
-          <Text className="text-blue font-semibold text-sm">
-            {labels[language].login}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       {/* Language selector */}
-      <View className="flex-row justify-center mb-8">
+      <View className="flex-row justify-center mb-6">
         {["en", "si", "ta"].map((lang, idx) => (
           <TouchableOpacity
             key={lang}
             onPress={() => setLanguage(lang)}
             className={`px-4 py-2 border ${
               idx === 0 ? "rounded-l-lg" : idx === 2 ? "rounded-r-lg" : ""
-            } ${language === lang ? "bg-regalBlue" : "bg-white"}`}
+            } ${language === lang ? "bg-[#000435]" : "bg-white border-gray-300"}`}
           >
-            <Text className={language === lang ? "text-white" : "text-black"}>
+            <Text className={language === lang ? "text-white font-semibold" : "text-black font-semibold"}>
               {lang.toUpperCase()}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
+
 
       {/* Grid of cards */}
       <View className="flex-row flex-wrap justify-between">

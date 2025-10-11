@@ -1,4 +1,3 @@
-// src/screens/PoliceDashboard.js
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -18,20 +17,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { AlertTriangle, MapPin, Check, Compass, LogOut } from "lucide-react-native";
 
-// ⬇️ client helpers call your API gateways / services
 import {
-  getLatestBoats,         // GPS service → latest boat locations (status may be 'sos' or 'active')
-  getActiveAlerts,        // NEW: Marine Police → active alerts (definitive SOS source)
-  getViolationReports,    // Reports listing
+  getLatestBoats,         
+  getActiveAlerts,        
+  getViolationReports,    
   getHazardReports,
   verifyViolation as apiVerifyViolation,
   resolveHazard as apiResolveHazard,
 } from "../api/client";
 
-// small util to print coordinates cleanly
 const fmtCoord = (n) => (typeof n === "number" ? n.toFixed(4) : "—");
 
-// tiny style helper for headings in the list
 function SectionTitle({ children }) {
   return <Text className="text-blue font-bold text-lg px-4 mt-2 mb-2">{children}</Text>;
 }
@@ -39,33 +35,26 @@ function SectionTitle({ children }) {
 export default function PoliceDashboard() {
   const navigation = useNavigation();
 
-  // ---- tabs: "sos" | "map" | "reports"
   const [tab, setTab] = useState("sos");
 
-  // ---- MAP  state
-  const mapRef = useRef(null);      // imperative ref to MapView for fit/animate
-  const [boats, setBoats] = useState([]);                 // normalized boat positions from GPS service
+  const mapRef = useRef(null);     
+  const [boats, setBoats] = useState([]);             
   const [loadingBoats, setLoadingBoats] = useState(false);
-  const [focusedBoat, setFocusedBoat] = useState(null);   // when user taps a marker
+  const [focusedBoat, setFocusedBoat] = useState(null);   
 
-  // ---- ALERTS (Marine Police) – the new source of truth for SOS list
-  const [alerts, setAlerts] = useState([]);           // normalized active alerts
+  const [alerts, setAlerts] = useState([]);         
   const [loadingAlerts, setLoadingAlerts] = useState(false);
 
-  // ---- REPORTS state
   const [loadingReports, setLoadingReports] = useState(false);
   const [violations, setViolations] = useState([]);
   const [hazards, setHazards] = useState([]);
 
-  // ---- report filters (UI chips)
-  const [reportType, setReportType] = useState("all");   // all | violation | hazard
-  const [statusFilter, setStatusFilter] = useState("all"); // all | pending | verified | resolved
-  const [refreshing, setRefreshing] = useState(false);     // pull-to-refresh
+  const [reportType, setReportType] = useState("all");   
+  const [statusFilter, setStatusFilter] = useState("all"); 
+  const [refreshing, setRefreshing] = useState(false);     
 
-  // ⬇️ the SOS list now comes from active ALERTS, not boats
   const sosList = useMemo(() => {
-    // alerts arrive shaped like:
-    // { _id, boatId, alertType: 'sos', status: 'active', location:{latitude,longitude}, timestamp }
+
     return alerts.map(a => ({
       id: a._id,
       boatId: a.boatId || "UNKNOWN",
@@ -76,7 +65,7 @@ export default function PoliceDashboard() {
     })).filter(a => typeof a.lat === "number" && typeof a.lng === "number");
   }, [alerts]);
 
-  // filter helpers for reports tab (unchanged)
+
   const filteredViolations = useMemo(() => {
     if (reportType !== "all" && reportType !== "violation") return [];
     return violations.filter((r) =>

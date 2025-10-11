@@ -1,7 +1,3 @@
-// src/screens/gps-tracking.js
-// keeps: compass, recenter, custom boat icon, SOS + Cancel, New Report & My Reports
-// removes: allowed zone polygon/banner
-
 import React, { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -21,7 +17,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   updateBoatLocation,
   sendSOS as apiSendSOS,
-  cancelSOS as apiCancelSOS, // <-- added
 } from "../api/client";
 
 const { width, height } = Dimensions.get("window");
@@ -32,7 +27,7 @@ export default function GPSTrackingScreen({ navigation }) {
 
   const [boatId, setBoatId] = useState(null); // nationalId stored as boatId in BE
   const [myPos, setMyPos] = useState(null); // { latitude, longitude }
-  const [sosActive, setSosActive] = useState(false);
+  //const [sosActive, setSosActive] = useState(false);
   const [sending, setSending] = useState(false);
 
   // read auth once to get boatId (nationalId)
@@ -154,28 +149,10 @@ export default function GPSTrackingScreen({ navigation }) {
     try {
       console.log("[gps] SOS →", { boatId, ...myPos });
       await apiSendSOS(boatId, myPos.latitude, myPos.longitude);
-      setSosActive(true);
       Alert.alert("SOS sent", "Marine Police have been notified. Stay safe.");
     } catch (e) {
       console.log("[gps] SOS error:", e?.message);
       Alert.alert("Error", "Failed to send SOS.");
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const doCancelSOS = async () => {
-    if (!sosActive || !boatId || !myPos) return;
-    if (sending) return;
-    setSending(true);
-    try {
-      console.log("[gps] Cancel SOS →", { boatId, ...myPos });
-      await apiCancelSOS(boatId, myPos.latitude, myPos.longitude);
-      setSosActive(false);
-      Alert.alert("SOS canceled", "Your SOS has been canceled.");
-    } catch (e) {
-      console.log("[gps] cancel SOS error:", e?.message);
-      Alert.alert("Error", "Failed to cancel SOS.");
     } finally {
       setSending(false);
     }
@@ -192,19 +169,16 @@ export default function GPSTrackingScreen({ navigation }) {
   return (
     <SafeAreaView className="flex-1 bg-white" style={{ paddingTop: 6 }}>
       {/* Header */}
-      <View className="px-4 pb-2">
-        <View className="flex-row items-center justify-between">
-          <View>
-            <Text className="text-[18px] font-extrabold text-blue">
-              Report Center
-            </Text>
-            <Text className="text-[12px] text-[#6E8CFB99]">
-              SOS • New Report • My Reports
-            </Text>
-          </View>
-          <View className="bg-lightPurple/80 rounded-full px-3 py-1">
-            <Text className="text-blue text-[11px] font-semibold">Live</Text>
-          </View>
+      <View className="px-4 pb-2 items-center">
+        <Text className="text-[20px] font-extrabold text-blue text-center">   
+          Report Center
+        </Text>
+        <Text className="text-[12px] text-[#6E8CFB99] text-center mt-0.5">
+          SOS • New Report • My Reports
+        </Text>
+          
+        <View className="bg-lightPurple/80 rounded-full px-3 py-1 mt-2">
+          <Text className="text-blue text-[11px] font-semibold">Live</Text>
         </View>
       </View>
 
@@ -301,15 +275,6 @@ export default function GPSTrackingScreen({ navigation }) {
           </TouchableOpacity>
         </Animated.View>
 
-        {sosActive && (
-          <TouchableOpacity
-            onPress={doCancelSOS}
-            disabled={sending}
-            className="mt-3 bg-white border border-red-400 rounded-2xl py-3 items-center"
-          >
-            <Text className="text-red-600 font-bold">Cancel SOS</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Secondary actions */}

@@ -1,7 +1,7 @@
 const Alert = require('../models/Alert');
 const axios = require('axios');
+const mongoose = require('mongoose');
 
-// GPS Service base URL
 //const GPS_SERVICE_URL = 'http://localhost:5001/api/gps';
 const { GPS_BASE } = require('../config/urls');
 
@@ -46,23 +46,32 @@ exports.getActiveAlerts = async (req, res) => {
 };
 
 exports.resolveAlert = async (req, res) => {
-    try {
-        const { alertId } = req.params;
-        const alert = await Alert.findByIdAndUpdate(
-            alertId,
-            { status: 'resolved' },
-            { new: true }
-        );
+  try {
+    const { alertId } = req.params;
+    console.log('[police] resolveAlert called with id =', alertId);
 
-        if (!alert) {
-            return res.status(404).json({ success: false, message: 'Alert not found' });
-        }
-
-        res.json({ success: true, message: 'Alert resolved successfully', data: alert });
-    } catch (error) {
-        console.error('Error resolving alert:', error);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+    if (!mongoose.Types.ObjectId.isValid(alertId)) {
+      console.warn('[police] invalid ObjectId:', alertId);
+      return res.status(400).json({ success: false, message: 'Invalid alert id' });
     }
+
+    const alert = await Alert.findByIdAndUpdate(
+      alertId,
+      { status: 'resolved' },
+      { new: true }
+    );
+
+    if (!alert) {
+      console.warn('[police] resolveAlert not found id =', alertId);
+      return res.status(404).json({ success: false, message: 'Alert not found' });
+    }
+
+    console.log('[police] resolveAlert success id =', alertId);
+    return res.json({ success: true, message: 'Alert resolved successfully', data: alert });
+  } catch (error) {
+    console.error('[police] resolveAlert error:', error?.message, error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 };
 
 // VIOLATION REPORTS (via API calls to GPS service)

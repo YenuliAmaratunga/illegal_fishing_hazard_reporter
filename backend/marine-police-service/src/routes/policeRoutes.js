@@ -7,13 +7,15 @@ const {
     getViolationReports,
     verifyViolation,
     getHazardReports,
-    resolveHazard
+    resolveHazard,
+    resolveAlertByBoat
 } = require('../controllers/policeController');
 
 // Alert Routes
 router.get('/alerts', getActiveAlerts);
 router.put('/alerts/:alertId/resolve', resolveAlert);
 router.post("/create", createAlert);
+router.put('/alerts/:boatId/resolve-by-boat', resolveAlertByBoat);
 
 // Violation Report Routes (API calls to GPS service)
 router.get('/violation-reports', getViolationReports);

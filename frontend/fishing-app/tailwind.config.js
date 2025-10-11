@@ -14,7 +14,8 @@ module.exports = {
         accentPurple : "#BABCFF",
         primaryText :"#E8EAFF",
         secondaryText : "#B7B9E0",
-        accentText : "#6E8CFB"
+        accentText : "#6E8CFB",
+        white : "#FFFFFF"
       },
       fontFamily: {
        sans: ['Inter', 'System'], // default sans font

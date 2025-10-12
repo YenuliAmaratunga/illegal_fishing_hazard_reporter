@@ -56,6 +56,7 @@ export default function RouteHazardMapScreen() {
         const storedAuth = await AsyncStorage.getItem("authData");
         if (!storedAuth) {
           Alert.alert("Session expired", "Please log in again.");
+          setLoading(false);
           return;
         }
 
@@ -63,34 +64,67 @@ export default function RouteHazardMapScreen() {
         setToken(parsed.token);
         setUserId(parsed.userId);
 
+        // ✅ Correct endpoint path (matches backend)
         const res = await axios.get(`${TRIP_BASE}/api/Trip/latestTrip`, {
           headers: { Authorization: `Bearer ${parsed.token}` },
         });
 
-        if (!res.data || !res.data.startingLocation) {
+        // ✅ Backend returns { message, trip: { ... } }
+        if (!res.data || !res.data.trip || !res.data.trip.startingLocation) {
           Alert.alert("No trip found", "Please register a trip first.");
           setLoading(false);
           return;
         }
 
-        const { startingLocation, destination } = res.data;
+        const trip = res.data.trip;
+        const startingLocation = trip.startingLocation;
+
+        // ✅ Compute a destination based on heading and distance
+        const headingDeg = trip.heading ?? 0;
+        const distanceKm = 15;
+
+        const computeDestination = (lat, lon, heading, distanceKm) => {
+          const R = 6371; // Earth radius in km
+          const brng = (heading * Math.PI) / 180;
+          const lat1 = (lat * Math.PI) / 180;
+          const lon1 = (lon * Math.PI) / 180;
+
+          const lat2 = Math.asin(
+            Math.sin(lat1) * Math.cos(distanceKm / R) +
+              Math.cos(lat1) * Math.sin(distanceKm / R) * Math.cos(brng)
+          );
+          const lon2 =
+            lon1 +
+            Math.atan2(
+              Math.sin(brng) * Math.sin(distanceKm / R) * Math.cos(lat1),
+              Math.cos(distanceKm / R) - Math.sin(lat1) * Math.sin(lat2)
+            );
+
+          return {
+            latitude: (lat2 * 180) / Math.PI,
+            longitude: (lon2 * 180) / Math.PI,
+          };
+        };
+
+        const dest = computeDestination(
+          startingLocation.latitude,
+          startingLocation.longitude,
+          headingDeg,
+          distanceKm
+        );
+
         const route = [
           {
             latitude: startingLocation.latitude,
             longitude: startingLocation.longitude,
           },
-          {
-            latitude: destination?.latitude || startingLocation.latitude + 0.5,
-            longitude:
-              destination?.longitude || startingLocation.longitude + 0.5,
-          },
+          dest,
         ];
-        setRouteCoords(route);
 
-        // Once route is known, fetch hazards
+        setRouteCoords(route);
         await fetchHazards(route);
       } catch (err) {
-        console.error("Error initializing route:", err.message);
+        console.error("Error initializing route:", err.response?.data || err.message);
         Alert.alert("Error", "Unable to load route data.");
       } finally {
         setLoading(false);
@@ -106,7 +140,7 @@ export default function RouteHazardMapScreen() {
       const { latitude, longitude } = route[0];
       const res = await axios.get(
         `${WEATHER_BASE}/forecast?lat=${latitude}&lon=${longitude}`,
-        { timeout: 10000 } // ✅ no Authorization header here
+        { timeout: 10000 }
       );
 
       if (res.data.success && res.data.data) {
@@ -115,7 +149,6 @@ export default function RouteHazardMapScreen() {
         const marine = forecast.marine || {};
         const hazardList = [];
 
-        // ⚡ Storm hazard
         if (weather.windSpeed && weather.windSpeed > 2) {
           hazardList.push({
             id: "hazard-wind",
@@ -127,7 +160,6 @@ export default function RouteHazardMapScreen() {
           });
         }
 
-        // 🌊 Waves hazard
         if (marine.current?.wave_height && marine.current.wave_height > 2.5) {
           hazardList.push({
             id: "hazard-wave",
@@ -139,11 +171,7 @@ export default function RouteHazardMapScreen() {
           });
         }
 
-        // 🌧 Rain hazard
-        if (
-          weather.conditions &&
-          weather.conditions.toLowerCase().includes("rain")
-        ) {
+        if (weather.conditions && weather.conditions.toLowerCase().includes("rain")) {
           hazardList.push({
             id: "hazard-rain",
             type: "rain",
@@ -154,13 +182,11 @@ export default function RouteHazardMapScreen() {
           });
         }
 
-        // Start animations
         hazardList.forEach((h) => {
           pulseRefs.current[h.id] = new Animated.Value(1);
           animatePulse(h.id);
         });
 
-        // Filter hazards along route
         const minLat = Math.min(route[0].latitude, route[1].latitude);
         const maxLat = Math.max(route[0].latitude, route[1].latitude);
         const minLon = Math.min(route[0].longitude, route[1].longitude);
@@ -168,10 +194,7 @@ export default function RouteHazardMapScreen() {
 
         const hazardsAlongRoute = hazardList.filter(
           (h) =>
-            h.lat >= minLat &&
-            h.lat <= maxLat &&
-            h.lon >= minLon &&
-            h.lon <= maxLon
+            h.lat >= minLat && h.lat <= maxLat && h.lon >= minLon && h.lon <= maxLon
         );
 
         setHazards(hazardsAlongRoute);
@@ -208,16 +231,14 @@ export default function RouteHazardMapScreen() {
   );
 
   const computeRisk = () => {
-    const totalSeverity = hazards.reduce(
-      (sum, h) => sum + (h.severity || 1),
-      0
-    );
+    const totalSeverity = hazards.reduce((sum, h) => sum + (h.severity || 1), 0);
     if (crossesRestrictedZone && totalSeverity >= 6)
       return { label: "❌ High Risk", color: "text-red-600" };
     if (crossesRestrictedZone || totalSeverity >= 4)
       return { label: "⚠️ Unsafe", color: "text-yellow-500" };
     return { label: "✅ Safe", color: "text-green-600" };
   };
+
   const risk = computeRisk();
 
   // ---------------- LOADING STATE ----------------
@@ -229,11 +250,7 @@ export default function RouteHazardMapScreen() {
           iterationCount="infinite"
           duration={1500}
         >
-          <MaterialCommunityIcons
-            name="map-search-outline"
-            size={70}
-            color="#3C467B"
-          />
+          <MaterialCommunityIcons name="map-search-outline" size={70} color="#3C467B" />
         </Animatable.View>
 
         <Animatable.Text
@@ -245,11 +262,7 @@ export default function RouteHazardMapScreen() {
           Fetching route & hazard data...
         </Animatable.Text>
 
-        <ActivityIndicator
-          size="large"
-          color="#636CCB"
-          style={{ marginTop: 10 }}
-        />
+        <ActivityIndicator size="large" color="#636CCB" style={{ marginTop: 10 }} />
       </View>
     );
 
@@ -275,26 +288,24 @@ export default function RouteHazardMapScreen() {
           height: Dimensions.get("window").height,
         }}
         initialRegion={{
-          latitude: (routeCoords[0]?.latitude + routeCoords[1]?.latitude) / 2,
+          latitude:
+            (routeCoords[0]?.latitude ?? 6.9) +
+            ((routeCoords[1]?.latitude ?? 6.95) - (routeCoords[0]?.latitude ?? 6.9)) / 2,
           longitude:
-            (routeCoords[0]?.longitude + routeCoords[1]?.longitude) / 2,
+            (routeCoords[0]?.longitude ?? 79.9) +
+            ((routeCoords[1]?.longitude ?? 79.95) - (routeCoords[0]?.longitude ?? 79.9)) / 2,
           latitudeDelta: 0.4,
           longitudeDelta: 0.4,
         }}
       >
-        {/* Route markers */}
-        <Marker coordinate={routeCoords[0]} title="Departure" pinColor="blue" />
-        <Marker
-          coordinate={routeCoords[1]}
-          title="Destination"
-          pinColor="green"
-        />
-
-        <Polyline
-          coordinates={routeCoords}
-          strokeColor="#007AFF"
-          strokeWidth={4}
-        />
+        {/* ✅ Only render markers/polyline when we have route points */}
+        {routeCoords.length === 2 && (
+          <>
+            <Marker coordinate={routeCoords[0]} title="Departure" pinColor="blue" />
+            <Marker coordinate={routeCoords[1]} title="Destination" pinColor="green" />
+            <Polyline coordinates={routeCoords} strokeColor="#007AFF" strokeWidth={4} />
+          </>
+        )}
 
         {/* Protected zones */}
         {zones.map((zone) => (
@@ -338,12 +349,8 @@ export default function RouteHazardMapScreen() {
       {/* Trip risk summary */}
       <View className="absolute bottom-32 w-full px-6">
         <View className="bg-white rounded-2xl shadow-md p-4 border border-blue-100 items-center">
-          <Text className="text-blue-700 font-bold text-base">
-            Trip Risk Summary
-          </Text>
-          <Text className={`text-2xl font-bold mt-1 ${risk.color}`}>
-            {risk.label}
-          </Text>
+          <Text className="text-blue-700 font-bold text-base">Trip Risk Summary</Text>
+          <Text className={`text-2xl font-bold mt-1 ${risk.color}`}>{risk.label}</Text>
         </View>
       </View>
 
@@ -356,8 +363,8 @@ export default function RouteHazardMapScreen() {
                 {selectedHazard.type === "storm"
                   ? "⚡ Storm Zone"
                   : selectedHazard.type === "waves"
-                    ? "🌊 High Wave Area"
-                    : "🌧️ Rainy Zone"}
+                  ? "🌊 High Wave Area"
+                  : "🌧️ Rainy Zone"}
               </Text>
               <Text
                 className="text-gray-500 text-lg"
@@ -366,9 +373,7 @@ export default function RouteHazardMapScreen() {
                 ✕
               </Text>
             </View>
-            <Text className="text-gray-700 mb-3">
-              {selectedHazard.description}
-            </Text>
+            <Text className="text-gray-700 mb-3">{selectedHazard.description}</Text>
             <Text className="text-gray-600 font-semibold">
               Severity: {selectedHazard.severity}/5
             </Text>

@@ -1,11 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
   Dimensions,
   ActivityIndicator,
-  Animated,
-  Easing,
   Alert,
 } from "react-native";
 import MapView, { Marker, Polyline, Polygon } from "react-native-maps";
@@ -40,14 +38,22 @@ const isPointInPolygon = (point, polygon) => {
 const doesRouteCrossZone = (route, polygon) =>
   route.some((p) => isPointInPolygon(p, polygon));
 
+// Compute approximate center of polygon
+const getPolygonCenter = (coordinates) => {
+  const lats = coordinates.map((c) => c.latitude);
+  const lons = coordinates.map((c) => c.longitude);
+  const lat = (Math.min(...lats) + Math.max(...lats)) / 2;
+  const lon = (Math.min(...lons) + Math.max(...lons)) / 2;
+  return { latitude: lat, longitude: lon };
+};
+
 export default function RouteHazardMapScreen() {
   const [token, setToken] = useState(null);
-  const [userId, setUserId] = useState(null);
   const [hazards, setHazards] = useState([]);
   const [selectedHazard, setSelectedHazard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [routeCoords, setRouteCoords] = useState([]);
-  const pulseRefs = useRef({});
+  const mapRef = useRef(null);
 
   // ---------------- AUTH + FETCH ROUTE ----------------
   useEffect(() => {
@@ -62,15 +68,12 @@ export default function RouteHazardMapScreen() {
 
         const parsed = JSON.parse(storedAuth);
         setToken(parsed.token);
-        setUserId(parsed.userId);
 
-        // ✅ Correct endpoint path (matches backend)
         const res = await axios.get(`${TRIP_BASE}/api/Trip/latestTrip`, {
           headers: { Authorization: `Bearer ${parsed.token}` },
         });
 
-        // ✅ Backend returns { message, trip: { ... } }
-        if (!res.data || !res.data.trip || !res.data.trip.startingLocation) {
+        if (!res.data?.trip?.startingLocation) {
           Alert.alert("No trip found", "Please register a trip first.");
           setLoading(false);
           return;
@@ -78,13 +81,11 @@ export default function RouteHazardMapScreen() {
 
         const trip = res.data.trip;
         const startingLocation = trip.startingLocation;
-
-        // ✅ Compute a destination based on heading and distance
         const headingDeg = trip.heading ?? 0;
         const distanceKm = 15;
 
         const computeDestination = (lat, lon, heading, distanceKm) => {
-          const R = 6371; // Earth radius in km
+          const R = 6371;
           const brng = (heading * Math.PI) / 180;
           const lat1 = (lat * Math.PI) / 180;
           const lon1 = (lon * Math.PI) / 180;
@@ -114,15 +115,21 @@ export default function RouteHazardMapScreen() {
         );
 
         const route = [
-          {
-            latitude: startingLocation.latitude,
-            longitude: startingLocation.longitude,
-          },
+          { latitude: startingLocation.latitude, longitude: startingLocation.longitude },
           dest,
         ];
 
         setRouteCoords(route);
         await fetchHazards(route);
+
+        setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.fitToCoordinates(route, {
+              edgePadding: { top: 100, right: 50, bottom: 200, left: 50 },
+              animated: true,
+            });
+          }
+        }, 500);
       } catch (err) {
         console.error("Error initializing route:", err.response?.data || err.message);
         Alert.alert("Error", "Unable to load route data.");
@@ -137,95 +144,76 @@ export default function RouteHazardMapScreen() {
   // ---------------- FETCH HAZARD DATA ----------------
   const fetchHazards = async (route) => {
     try {
-      const { latitude, longitude } = route[0];
-      const res = await axios.get(
-        `${WEATHER_BASE}/forecast?lat=${latitude}&lon=${longitude}`,
-        { timeout: 10000 }
+      const numIntervals = 4;
+      const [start, end] = route;
+
+      const intervalPoints = Array.from({ length: numIntervals }, (_, i) => ({
+        latitude: start.latitude + ((end.latitude - start.latitude) * (i + 1)) / (numIntervals + 1),
+        longitude: start.longitude + ((end.longitude - start.longitude) * (i + 1)) / (numIntervals + 1),
+      }));
+
+      const results = await Promise.all(
+        intervalPoints.map((point) =>
+          axios
+            .get(`${WEATHER_BASE}/forecast?lat=${point.latitude}&lon=${point.longitude}`, { timeout: 10000 })
+            .then((res) => ({ point, data: res.data }))
+            .catch((err) => ({ point, error: err }))
+        )
       );
 
-      if (res.data.success && res.data.data) {
-        const forecast = res.data.data;
-        const weather = forecast.weather || {};
-        const marine = forecast.marine || {};
-        const hazardList = [];
+      const allHazards = [];
 
-        if (weather.windSpeed && weather.windSpeed > 2) {
-          hazardList.push({
-            id: "hazard-wind",
-            type: "storm",
-            lat: latitude,
-            lon: longitude,
-            severity: 5,
-            description: `Strong winds (${weather.windSpeed} km/h)`,
-          });
+      results.forEach(({ point, data, error }) => {
+        if (error) return;
+
+        if (data?.success && data.data) {
+          const forecast = data.data;
+          const weather = forecast.weather || {};
+          const marine = forecast.marine || {};
+
+          if (weather.windSpeed && weather.windSpeed > 5) {
+            allHazards.push({
+              id: `wind-${point.latitude.toFixed(4)}-${point.longitude.toFixed(4)}`,
+              type: "storm",
+              lat: point.latitude,
+              lon: point.longitude,
+              severity: 5,
+              description: `Strong winds (${weather.windSpeed} km/h)`,
+            });
+          }
+
+          if (marine.current?.wave_height && marine.current.wave_height > 2.5) {
+            allHazards.push({
+              id: `wave-${point.latitude.toFixed(4)}-${point.longitude.toFixed(4)}`,
+              type: "waves",
+              lat: point.latitude,
+              lon: point.longitude,
+              severity: 4,
+              description: `High waves (${marine.current.wave_height} m)`,
+            });
+          }
+
+          if (weather.conditions?.toLowerCase().includes("rain")) {
+            allHazards.push({
+              id: `rain-${point.latitude.toFixed(4)}-${point.longitude.toFixed(4)}`,
+              type: "rain",
+              lat: point.latitude,
+              lon: point.longitude,
+              severity: 3,
+              description: "Rainy conditions — visibility reduced.",
+            });
+          }
         }
+      });
 
-        if (marine.current?.wave_height && marine.current.wave_height > 2.5) {
-          hazardList.push({
-            id: "hazard-wave",
-            type: "waves",
-            lat: latitude,
-            lon: longitude,
-            severity: 4,
-            description: `High waves (${marine.current.wave_height} m)`,
-          });
-        }
-
-        if (weather.conditions && weather.conditions.toLowerCase().includes("rain")) {
-          hazardList.push({
-            id: "hazard-rain",
-            type: "rain",
-            lat: latitude,
-            lon: longitude,
-            severity: 3,
-            description: "Rainy conditions — visibility reduced.",
-          });
-        }
-
-        hazardList.forEach((h) => {
-          pulseRefs.current[h.id] = new Animated.Value(1);
-          animatePulse(h.id);
-        });
-
-        const minLat = Math.min(route[0].latitude, route[1].latitude);
-        const maxLat = Math.max(route[0].latitude, route[1].latitude);
-        const minLon = Math.min(route[0].longitude, route[1].longitude);
-        const maxLon = Math.max(route[0].longitude, route[1].longitude);
-
-        const hazardsAlongRoute = hazardList.filter(
-          (h) =>
-            h.lat >= minLat && h.lat <= maxLat && h.lon >= minLon && h.lon <= maxLon
-        );
-
-        setHazards(hazardsAlongRoute);
-      }
+      setHazards(allHazards);
     } catch (err) {
       console.error("Error fetching hazards:", err.message);
       setHazards([]);
     }
   };
 
-  // ---------------- ANIMATION ----------------
-  const animatePulse = (id) => {
-    const anim = pulseRefs.current[id];
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(anim, {
-          toValue: 1.4,
-          duration: 1200,
-          easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 1200,
-          easing: Easing.in(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  };
-
+  // ---------------- RISK ----------------
   const crossesRestrictedZone = zones.some((zone) =>
     doesRouteCrossZone(routeCoords, zone.coordinates)
   );
@@ -241,32 +229,26 @@ export default function RouteHazardMapScreen() {
 
   const risk = computeRisk();
 
-  // ---------------- LOADING STATE ----------------
+  // ---------------- LOADING ----------------
   if (loading)
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <Animatable.View
-          animation="pulse"
-          iterationCount="infinite"
-          duration={1500}
-        >
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "white" }}>
+        <Animatable.View animation="pulse" iterationCount="infinite" duration={1500}>
           <MaterialCommunityIcons name="map-search-outline" size={70} color="#3C467B" />
         </Animatable.View>
-
         <Animatable.Text
           animation="fadeIn"
           iterationCount="infinite"
           duration={2000}
-          className="text-blue mt-3 font-semibold text-lg"
+          style={{ color: "#3C467B", marginTop: 12, fontWeight: "600", fontSize: 18 }}
         >
           Fetching route & hazard data...
         </Animatable.Text>
-
         <ActivityIndicator size="large" color="#636CCB" style={{ marginTop: 10 }} />
       </View>
     );
 
-  // ---------------- MAP UI ----------------
+  // ---------------- MAP ----------------
   const getHazardVisuals = (type) => {
     switch (type) {
       case "storm":
@@ -281,24 +263,18 @@ export default function RouteHazardMapScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <MapView
-        style={{
-          width: Dimensions.get("window").width,
-          height: Dimensions.get("window").height,
-        }}
+        ref={mapRef}
+        style={{ width: Dimensions.get("window").width, height: Dimensions.get("window").height }}
         initialRegion={{
-          latitude:
-            (routeCoords[0]?.latitude ?? 6.9) +
-            ((routeCoords[1]?.latitude ?? 6.95) - (routeCoords[0]?.latitude ?? 6.9)) / 2,
-          longitude:
-            (routeCoords[0]?.longitude ?? 79.9) +
-            ((routeCoords[1]?.longitude ?? 79.95) - (routeCoords[0]?.longitude ?? 79.9)) / 2,
+          latitude: 6.925,
+          longitude: 79.925,
           latitudeDelta: 0.4,
           longitudeDelta: 0.4,
         }}
       >
-        {/* ✅ Only render markers/polyline when we have route points */}
+        {/* Route */}
         {routeCoords.length === 2 && (
           <>
             <Marker coordinate={routeCoords[0]} title="Departure" pinColor="blue" />
@@ -307,7 +283,7 @@ export default function RouteHazardMapScreen() {
           </>
         )}
 
-        {/* Protected zones */}
+        {/* Marine Zones */}
         {zones.map((zone) => (
           <Polygon
             key={zone.id}
@@ -318,78 +294,161 @@ export default function RouteHazardMapScreen() {
           />
         ))}
 
+        {/* MPA Labels */}
+        {zones.map((zone) => {
+          const center = getPolygonCenter(zone.coordinates);
+          return (
+            <Marker
+              key={`${zone.id}-label`}
+              coordinate={center}
+              tracksViewChanges={false}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View
+                style={{
+                  backgroundColor: "white",
+                  paddingHorizontal: 6,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: "#3C467B",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 1,
+                  elevation: 2,
+                }}
+              >
+                <Text style={{ color: "#3C467B", fontSize: 12, fontWeight: "bold" }}>
+                  {zone.name}
+                </Text>
+              </View>
+            </Marker>
+          );
+        })}
+
         {/* Hazards */}
         {hazards.map((h) => {
           const visuals = getHazardVisuals(h.type);
-          const scale = pulseRefs.current[h.id] || new Animated.Value(1);
           return (
             <Marker
               key={h.id}
               coordinate={{ latitude: h.lat, longitude: h.lon }}
               onPress={() => setSelectedHazard(h)}
             >
-              <Animated.View
-                className="items-center justify-center"
-                style={{ transform: [{ scale }] }}
-              >
-                <View className="w-8 h-8 rounded-full bg-red-200 opacity-25 absolute" />
-                <View className="w-8 h-8 rounded-full bg-white items-center justify-center shadow">
-                  <MaterialCommunityIcons
-                    name={visuals.icon}
-                    size={20}
-                    color={visuals.color}
-                  />
+              <View style={{ alignItems: "center", justifyContent: "center" }}>
+                <View style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: "rgba(255,0,0,0.15)",
+                  position: "absolute"
+                }} />
+                <View style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: "white",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 1,
+                  elevation: 2,
+                }}>
+                  <MaterialCommunityIcons name={visuals.icon} size={20} color={visuals.color} />
                 </View>
-              </Animated.View>
+              </View>
             </Marker>
           );
         })}
       </MapView>
 
-      {/* Trip risk summary */}
-      <View className="absolute bottom-32 w-full px-6">
-        <View className="bg-white rounded-2xl shadow-md p-4 border border-blue-100 items-center">
-          <Text className="text-blue-700 font-bold text-base">Trip Risk Summary</Text>
-          <Text className={`text-2xl font-bold mt-1 ${risk.color}`}>{risk.label}</Text>
+      {/* Trip Risk Summary */}
+      <View style={{
+        position: "absolute",
+        bottom: 20,
+        width: "100%",
+        paddingHorizontal: 24,
+      }}>
+        <View style={{
+          backgroundColor: "white",
+          borderRadius: 20,
+          padding: 16,
+          borderWidth: 1,
+          borderColor: "#D6DBF7",
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          shadowRadius: 1,
+          elevation: 3,
+        }}>
+          <Text style={{ color: "#3C467B", fontWeight: "bold", fontSize: 16 }}>Trip Risk Summary</Text>
+          <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 4, color: risk.color.includes("red") ? "red" : risk.color.includes("yellow") ? "orange" : "green" }}>
+            {risk.label}
+          </Text>
         </View>
       </View>
 
-      {/* Hazard popup */}
+      {/* Hazard Details */}
       {selectedHazard && (
-        <View className="absolute bottom-52 w-full px-5">
-          <View className="bg-white rounded-2xl p-4 shadow-lg border border-blue-100">
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="font-bold text-lg text-gray-800">
+        <View style={{
+          position: "absolute",
+          bottom: 160,
+          width: "100%",
+          paddingHorizontal: 20,
+        }}>
+          <View style={{
+            backgroundColor: "white",
+            borderRadius: 20,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: "#D6DBF7",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 2,
+            elevation: 4,
+          }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <Text style={{ fontWeight: "bold", fontSize: 18, color: "#4B5563" }}>
                 {selectedHazard.type === "storm"
                   ? "⚡ Storm Zone"
                   : selectedHazard.type === "waves"
                   ? "🌊 High Wave Area"
                   : "🌧️ Rainy Zone"}
               </Text>
-              <Text
-                className="text-gray-500 text-lg"
-                onPress={() => setSelectedHazard(null)}
-              >
-                ✕
-              </Text>
+              <Text style={{ fontSize: 18, color: "#6B7280" }} onPress={() => setSelectedHazard(null)}>✕</Text>
             </View>
-            <Text className="text-gray-700 mb-3">{selectedHazard.description}</Text>
-            <Text className="text-gray-600 font-semibold">
-              Severity: {selectedHazard.severity}/5
-            </Text>
+            <Text style={{ color: "#4B5563", marginBottom: 8 }}>{selectedHazard.description}</Text>
+            <Text style={{ color: "#374151", fontWeight: "600" }}>Severity: {selectedHazard.severity}/5</Text>
           </View>
         </View>
       )}
 
       {/* Legend */}
-      <View className="absolute top-14 right-4 bg-white/80 p-2 rounded-lg shadow">
-        <View className="flex-row items-center mb-1">
-          <View className="w-4 h-4 bg-[#5C33CF]/40 border border-[#3C0D99] mr-2" />
-          <Text className="text-xs">Marine Protected Zone</Text>
+      <View style={{
+        position: "absolute",
+        top: 56,
+        right: 16,
+        backgroundColor: "rgba(255,255,255,0.8)",
+        padding: 8,
+        borderRadius: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 1,
+        elevation: 3,
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+          <View style={{ width: 16, height: 16, backgroundColor: "rgba(92,51,207,0.25)", borderWidth: 1, borderColor: "#3C0D99", marginRight: 4 }} />
+          <Text style={{ fontSize: 12 }}>Marine Protected Zone</Text>
         </View>
-        <View className="flex-row items-center">
-          <View className="w-4 h-4 bg-red-200 border border-red-500 mr-2" />
-          <Text className="text-xs">Weather Hazard</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: 16, height: 16, backgroundColor: "rgba(255,0,0,0.15)", borderWidth: 1, borderColor: "red", marginRight: 4 }} />
+          <Text style={{ fontSize: 12 }}>Weather Hazard</Text>
         </View>
       </View>
     </View>

@@ -19,7 +19,7 @@ export default function RiskScreen() {
   return (
     <ScrollView className="flex-1 white px-4 pt-12">
       <Text className="text-2xl font-bold text-black mb-6 text-center">
-        ⚠️ Safety Checklist Before Fishing Trip
+        Safety Checklist Before Fishing Trip
       </Text>
 
       <View className="bg-darkPurple rounded-2xl p-4 mb-4">

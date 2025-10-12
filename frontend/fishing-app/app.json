@@ -4,7 +4,7 @@
     "slug": "AquaWatch",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "src/assets/icon.png",
+    "icon": "src/assets/AppLogo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {

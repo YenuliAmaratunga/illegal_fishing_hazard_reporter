@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { SafeAreaView, View, Text, TouchableOpacity, Image, ScrollView } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function LandingScreen({ navigation }) {
   const [language, setLanguage] = useState("en");
@@ -12,62 +11,119 @@ export default function LandingScreen({ navigation }) {
     ta: { register: "பதிவு", login: "உள்நுழையவும்" },
   };
 
-  return (
-    <View className="flex-1 items-center justify-center" style={{ backgroundColor: "#D8D8FF" }}>
-      {/* App Logo */}
-      <Image
-        source={require("../assets/AppLogo.png")}
-        className="w-42 h-40 mb-8"
-        resizeMode="contain"
-      />
+  // Native language labels for selector buttons
+  const langLabelsNative = {
+    en: "EN",
+    si: "සිං",
+    ta: "த",
+  };
 
-      {/* Get Started Button */}
-      <TouchableOpacity
-        className="px-8 py-3 rounded-lg mb-4"
-        style={{ backgroundColor: "#000435" }}
-        onPress={() => navigation.replace("MainTabs")}
+  // Ensure fallback if language key is missing
+  const currentLabels = labels[language] || labels.en;
+
+  // Gradient Button component
+  const GradientButton = ({ text, colors, onPress }) => (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={{
+        borderRadius: 20,
+        overflow: "hidden",
+        shadowColor: "#000",
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 5,
+        flex: 1,
+      }}
+    >
+      <LinearGradient
+        colors={colors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          paddingVertical: 16,
+          alignItems: "center",
+          borderRadius: 20,
+        }}
       >
-        <Text className="font-poppins text-white text-lg font-semibold">Get Started</Text>
-      </TouchableOpacity>
+        <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+          {text ?? ""}
+        </Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
 
-      {/* Register & Login Buttons */}
-      <View className="flex-row space-x-4 mb-6">
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Register", { language })}
-          className="bg-regalBlue px-4 py-2 rounded-lg"
+  return (
+    <LinearGradient
+      colors={["#EEF0FF", "#D8D8FF"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={{ flex: 1, paddingHorizontal: 24 }}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          showsVerticalScrollIndicator={false}
         >
-          <Text className="text-white font-semibold text-sm">
-            {labels[language].register}
-          </Text>
-        </TouchableOpacity>
+          {/* App Logo */}
+          <Image
+            source={require("../assets/CircularAppLogo.png")}
+            style={{ width: 192, height: 192, marginBottom: 64 }}
+            resizeMode="contain"
+          />
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Login", { language })}
-          className="bg-regalBlue px-4 py-2 rounded-lg"
-        >
-          <Text className="text-white font-semibold text-sm">
-            {labels[language].login}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {/* Register & Login Buttons */}
+          <View style={{ width: "100%", marginBottom: 24 }}>
+            <GradientButton
+              text={currentLabels.register}
+              colors={["#50589C", "#6E8CFB"]}
+              onPress={() => navigation.navigate("Register", { language })}
+            />
+            <View style={{ height: 32 }} /> {/* spacing between buttons */}
+            <GradientButton
+              text={currentLabels.login}
+              colors={["#6E8CFB", "#BABCFF"]}
+              onPress={() => navigation.navigate("Login", { language })}
+            />
+          </View>
 
-      {/* Language selector */}
-      <View className="flex-row justify-center">
-        {["en", "si", "ta"].map((lang, idx) => (
-          <TouchableOpacity
-            key={lang}
-            onPress={() => setLanguage(lang)}
-            className={`px-4 py-2 border ${
-              idx === 0 ? "rounded-l-lg" : idx === 2 ? "rounded-r-lg" : ""
-            } ${language === lang ? "bg-[#000435]" : "bg-white border-gray-300"}`}
-          >
-            <Text className={language === lang ? "text-white font-semibold" : "text-black font-semibold"}>
-              {lang.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-  ))}
-</View>
-
-    </View>
+          {/* Language Selector */}
+          <View style={{ flexDirection: "row", marginTop: 48 }}>
+            {["en", "si", "ta"].map((lang, idx) => (
+              <TouchableOpacity
+                key={lang}
+                onPress={() => setLanguage(lang)}
+                style={{
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                  borderWidth: 1,
+                  borderColor: "#ccc",
+                  backgroundColor: language === lang ? "#000435" : "#fff",
+                  borderTopLeftRadius: idx === 0 ? 8 : 0,
+                  borderBottomLeftRadius: idx === 0 ? 8 : 0,
+                  borderTopRightRadius: idx === 2 ? 8 : 0,
+                  borderBottomRightRadius: idx === 2 ? 8 : 0,
+                  marginLeft: idx !== 0 ? -1 : 0,
+                }}
+              >
+                <Text
+                  style={{
+                    color: language === lang ? "#fff" : "#000",
+                    fontWeight: "600",
+                  }}
+                >
+                  {langLabelsNative[lang]}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import * as Location from "expo-location";
 import * as Animatable from "react-native-animatable";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental &&
@@ -87,7 +88,6 @@ export default function WeatherForecastScreen() {
   const { weather: currentWeather, marine } = weather;
   const locationName = currentWeather?.location ?? "Unknown";
 
-  // --- Helpers ---
   const getWaveColor = (h) => {
     if (!h) return "text-white";
     if (h > 3) return "text-red-500";
@@ -102,7 +102,6 @@ export default function WeatherForecastScreen() {
     return "text-blue-500";
   };
 
-  // --- Row component ---
   const Row = ({ icon, label, value, colorClass, labelColor, iconColor }) => (
     <View className="flex-row justify-between items-center mt-3">
       <View className="flex-row items-center">
@@ -123,7 +122,6 @@ export default function WeatherForecastScreen() {
     </View>
   );
 
-  // --- Forecast renderers ---
   const renderHourly = () => {
     if (!marine?.hourly?.wave_height) return <Text>No hourly data</Text>;
     const hoursToShow = marine.hourly.wave_height.slice(0, 7);
@@ -182,9 +180,7 @@ export default function WeatherForecastScreen() {
             <Row
               icon="compass"
               label="Direction:"
-              value={`${
-                marine.daily.wind_wave_direction_dominant[idx] ?? "--"
-              }°`}
+              value={`${marine.daily.wind_wave_direction_dominant[idx] ?? "--"}°`}
             />
             <Row
               icon="weather-windy"
@@ -197,10 +193,8 @@ export default function WeatherForecastScreen() {
     );
   };
 
-  // --- Dynamic Quick Tips ---
   const generateTips = () => {
     const tips = [];
-
     if (currentWeather?.windSpeed > 30) {
       tips.push({
         icon: "weather-windy",
@@ -251,11 +245,43 @@ export default function WeatherForecastScreen() {
   };
 
   const quickTips = generateTips();
-
   const toggleTips = () => {
     LayoutAnimation.easeInEaseOut();
     setShowTips(!showTips);
   };
+
+  // Gradient Button component for "View Route Hazard Map"
+  const GradientActionButton = ({ onPress, text }) => (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={{
+        borderRadius: 20,
+        overflow: "hidden",
+        elevation: 5,
+        width: "100%",
+        marginVertical: 10,
+      }}
+    >
+      <LinearGradient
+        colors={["#6E8CFB", "#BABCFF"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          paddingVertical: 14,
+          alignItems: "center",
+          borderRadius: 20,
+          flexDirection: "row",
+          justifyContent: "center",
+        }}
+      >
+        <MaterialCommunityIcons name="map-search-outline" size={22} color="#fff" />
+        <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16, marginLeft: 8 }}>
+          {text}
+        </Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
 
   return (
     <View className="flex-1 bg-white px-4 pt-12">
@@ -264,9 +290,7 @@ export default function WeatherForecastScreen() {
           Forecast for {locationName}, Sri Lanka
         </Text>
 
-        {/* ⚠️ Warning */}
-        {(currentWeather?.windSpeed > 30 ||
-          marine?.current?.wave_height > 2.5) && (
+        {(currentWeather?.windSpeed > 30 || marine?.current?.wave_height > 2.5) && (
           <View className="bg-red-500 rounded-xl p-3 mb-4">
             <Text className="text-white text-center font-bold text-lg">
               ⚠️ Dangerous conditions ahead! Sail with caution
@@ -274,7 +298,6 @@ export default function WeatherForecastScreen() {
           </View>
         )}
 
-        {/* Current Conditions */}
         <View
           className="bg-lightPurple rounded-2xl p-5 mb-6 shadow-lg"
           style={{ elevation: 4 }}
@@ -316,7 +339,6 @@ export default function WeatherForecastScreen() {
           />
         </View>
 
-        {/* Forecast Switch */}
         <View className="flex-row justify-center mb-6 rounded-full">
           {["Hourly", "Daily"].map((type) => (
             <TouchableOpacity
@@ -339,10 +361,8 @@ export default function WeatherForecastScreen() {
           ))}
         </View>
 
-        {/* Forecast Cards */}
         {forecastType === "Hourly" ? renderHourly() : renderDaily()}
 
-        {/* Quick Tips */}
         <View className="bg-blueLight rounded-2xl mt-8 mb-6 shadow-md">
           <TouchableOpacity
             onPress={toggleTips}
@@ -377,20 +397,11 @@ export default function WeatherForecastScreen() {
           )}
         </View>
 
-        <TouchableOpacity
+        {/* Refactored Gradient "View Route Hazard Map" Button */}
+        <GradientActionButton
+          text="View Route Hazard Map"
           onPress={() => navigation.navigate("RouteHazardMap")}
-          className="flex-row items-center justify-center border border-blueLight bg-accentPurple py-3 rounded-xl mb-12 mt-4 shadow-lg mx-10"
-          style={{ elevation: 4 }}
-        >
-          <MaterialCommunityIcons
-            name="map-search-outline"
-            size={22}
-            color="#3C467B"
-          />
-          <Text className="text-blue text-center font-bold text-lg ml-2">
-            View Route Hazard Map
-          </Text>
-        </TouchableOpacity>
+        />
       </ScrollView>
     </View>
   );

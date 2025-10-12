@@ -68,7 +68,7 @@ export const sendSOS = (boatId, latitude, longitude) =>
 /* ---------- Marine Police – latest boats ---------- */
 export const getLatestBoats = async () => {
   const candidates = [
-    `${GPS_BASE}/api/gps/locations`
+    `${GPS_BASE}/api/gps/locations`,
     `${GPS_BASE}/api/gps/latest-locations`,
     `${GPS_BASE}/api/gps/locations/latest`,
     `${GPS_BASE}/api/gps/get-latest-locations`,

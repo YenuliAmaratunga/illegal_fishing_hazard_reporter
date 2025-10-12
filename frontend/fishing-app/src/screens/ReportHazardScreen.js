@@ -15,6 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { uploadToCloudinary } from "../utils/uploadImage";
 import { gpsPost } from "../api/client";
+import { Picker } from "@react-native-picker/picker";
 
 export default function ReportHazardScreen() {
   // ---- form state ----
@@ -27,31 +28,62 @@ export default function ReportHazardScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   // ---- capture photo, upload to Cloudinary, push URL into evidence[] ----
-  const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      return Alert.alert("Permission required", "Need camera permission to take photos");
-    }
+const takePhoto = async () => {
+  Alert.alert(
+    "Add Photo",
+    "Choose photo source",
+    [
+      {
+        text: "Camera",
+        onPress: async () => {
+          const permission = await ImagePicker.requestCameraPermissionsAsync();
+          if (!permission.granted) {
+            return Alert.alert("Permission required", "Need camera permission to take photos");
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: false,
+            quality: 0.8,
+            aspect: [4, 3],
+          });
+          if (!result.canceled) await handleImageUpload(result.assets[0].uri);
+        }
+      },
+      {
+        text: "Gallery",
+        onPress: async () => {
+          const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!permission.granted) {
+            return Alert.alert("Permission required", "Need gallery permission to select photos");
+          }
+          const result = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: false,
+            quality: 0.8,
+            aspect: [4, 3],
+          });
+          if (!result.canceled) await handleImageUpload(result.assets[0].uri);
+        }
+      },
+      {
+        text: "Cancel",
+        style: "cancel"
+      }
+    ]
+  );
+};
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: false,
-      quality: 0.8,
-      aspect: [4, 3],
-    });
-    if (result.canceled) return;
-
-    try {
-      setUploading(true);
-      const httpsUrl = await uploadToCloudinary(result.assets[0].uri); // <-- returns secure_url
-      setEvidence((prev) => [...prev, httpsUrl]);
-    } catch (e) {
-      console.log("Cloudinary upload error:", e?.message);
-      Alert.alert("Upload failed", e?.message || "Could not upload image");
-    } finally {
-      setUploading(false);
-    }
-  };
-
+// Add this helper function for image upload
+const handleImageUpload = async (uri) => {
+  try {
+    setUploading(true);
+    const httpsUrl = await uploadToCloudinary(uri);
+    setEvidence((prev) => [...prev, httpsUrl]);
+  } catch (e) {
+    console.log("Cloudinary upload error:", e?.message);
+    Alert.alert("Upload failed", e?.message || "Could not upload image");
+  } finally {
+    setUploading(false);
+  }
+};
   // ---- remove a photo by index ----
   const removePhoto = (indexToRemove) => {
     setEvidence((prev) => prev.filter((_, i) => i !== indexToRemove));
@@ -143,29 +175,24 @@ export default function ReportHazardScreen() {
         <Text className="text-2xl font-bold text-blue text-center mb-6">⚠️ Report Hazard</Text>
 
         {/* Hazard Type */}
-        <View className="mb-5">
-          <Text className="text-blue text-lg font-extrabold mb-2">
-            Hazard Type <Text className="text-red-600">*</Text>
-          </Text>
-          <View className="flex-row flex-wrap gap-2">
-            {HAZARD_OPTIONS.map((opt) => {
-              const active = hazardType === opt.key;
-              return (
-                <TouchableOpacity
-                  key={opt.key}
-                  className={`px-4 py-2 rounded-full border ${
-                    active ? "bg-blueLight border-blueLight" : "bg-white border-blueLight"
-                  }`}
-                  onPress={() => setHazardType(opt.key)}
-                >
-                  <Text className={`font-semibold ${active ? "text-white" : "text-blue"}`}>
-                    {opt.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
+<View className="mb-5">
+  <Text className="text-blue text-lg font-extrabold mb-2">
+    Hazard Type <Text className="text-red-600">*</Text>
+  </Text>
+  <View className="bg-white border border-blueLight rounded-2xl overflow-hidden">
+    <Picker
+      selectedValue={hazardType}
+      onValueChange={(itemValue) => setHazardType(itemValue)}
+      style={{ color: '#3E5FC9' }}
+      dropdownIconColor="#3E5FC9"
+    >
+      <Picker.Item label="Select hazard type..." value="" />
+      {HAZARD_OPTIONS.map((opt) => (
+        <Picker.Item key={opt.key} label={opt.label} value={opt.key} />
+      ))}
+    </Picker>
+  </View>
+</View>
 
         {/* Description */}
         <View className="mb-5">
@@ -228,22 +255,22 @@ export default function ReportHazardScreen() {
             </View>
           )}
 
-          <TouchableOpacity
-            className="bg-white border border-blueLight rounded-2xl p-4 items-center"
-            onPress={takePhoto}
-            disabled={uploading}
-          >
-            {uploading ? (
-              <View className="flex-row items-center">
-                <ActivityIndicator size="small" />
-                <Text className="text-blue text-base font-semibold ml-2">Uploading…</Text>
-              </View>
-            ) : (
-              <Text className="text-blue text-lg">
-                📷 {evidence.length > 0 ? "Add Another Photo" : "Take Photo Evidence"}
-              </Text>
-            )}
-          </TouchableOpacity>
+<TouchableOpacity
+  className="bg-white border border-blueLight rounded-2xl p-4 items-center"
+  onPress={takePhoto}
+  disabled={uploading}
+>
+  {uploading ? (
+    <View className="flex-row items-center">
+      <ActivityIndicator size="small" />
+      <Text className="text-blue text-base font-semibold ml-2">Uploading…</Text>
+    </View>
+  ) : (
+    <Text className="text-blue text-lg">
+      📷 {evidence.length > 0 ? "Add More Photos" : "Add Photo Evidence"}
+    </Text>
+  )}
+</TouchableOpacity>
 
           {/* ← This is where you asked to show the uploading text */}
           {/* {uploading && <Text className="text-blue mt-2">Uploading photo…</Text>} */}

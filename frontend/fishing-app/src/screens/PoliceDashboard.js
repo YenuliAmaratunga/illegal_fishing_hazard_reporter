@@ -92,7 +92,7 @@ export default function PoliceDashboard() {
           const source = row.latestLocation || row.latest || row;
           return {
             boatId: row._id || row.boatId || source?.boatId,
-            name: row.name || row.boatName || `Boat ${row._id || row.boatId || "?"}`,
+            name: row.name || row.boatName || `${row._id || row.boatId || "?"}`,
             lat: source?.latitude ?? row.latitude,
             lng: source?.longitude ?? row.longitude,
             status: (source?.status ?? row.status) || "active",
@@ -238,7 +238,7 @@ export default function PoliceDashboard() {
     );
   }
 
-  return (
+return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       {/* Header */}
       <View className="px-4 pt-2 pb-3 flex-row items-center justify-between">
@@ -252,41 +252,64 @@ export default function PoliceDashboard() {
         </TouchableOpacity>
       </View>
 
-      {/* Tabs */}
-      <View className="flex-row mt-1 px-4">
-        <TabButton value="sos" label="SOS" />
-        <TabButton value="map" label="Map" />
-        <TabButton value="reports" label="Reports" />
+      {/* Enhanced Tabs */}
+      <View className="flex-row mt-3 px-6 bg-white border-b border-lightPurple pb-2">
+        <TabButton value="sos" label="🚨 SOS Alerts" />
+        <TabButton value="map" label="🗺️ Live Map" />
+        <TabButton value="reports" label="📋 Reports" />
       </View>
 
-      {/* SOS tab → now shows Active Alerts from Marine Police */}
+      {/* Enhanced SOS tab */}
       {tab === "sos" && (
         <View className="flex-1">
-          <View className="mx-4 mt-3 mb-3 bg-red-600 rounded-2xl px-4 py-3 shadow">
+          {/* Fixed SOS Alert Banner - Properly red and visible */}
+          <View className="mx-6 mt-4 mb-4 bg-red-600 rounded-2xl px-5 py-4 shadow-lg">
             <View className="flex-row items-center">
-              <AlertTriangle color="white" />
-              <Text className="text-white font-bold text-lg ml-2">
-                Active SOS: {loadingAlerts ? "…" : sosList.length}
-              </Text>
+              <View className="bg-white/20 rounded-full p-2 mr-3">
+                <AlertTriangle color="white" size={22} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-white font-heading font-bold text-xl">
+                  Active SOS Alerts: {loadingAlerts ? "..." : sosList.length}
+                </Text>
+                <Text className="text-white/90 text-sm font-sans mt-1">
+                  Emergency situations requiring immediate attention
+                </Text>
+              </View>
             </View>
-            <Text className="text-white/90 mt-1">Tap a case to zoom on map and view details.</Text>
           </View>
 
           {loadingAlerts ? (
-            <ActivityIndicator style={{ marginTop: 16 }} />
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator size="large" color="#DC2626" />
+              <Text className="text-darkBlue font-sans mt-4">Loading emergency alerts...</Text>
+            </View>
           ) : (
             <FlatList
               data={sosList}
               keyExtractor={(a) => a.id}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
               ListEmptyComponent={
-                <View className="items-center mt-10">
-                  <Text className="text-secondaryText">No active SOS</Text>
+                <View className="items-center mt-16">
+                  <View className="bg-green-50 rounded-3xl p-8 items-center border border-green-200">
+                    <Text className="text-4xl mb-4">✅</Text>
+                    <Text className="text-darkBlue font-heading font-bold text-xl mb-2">All Clear!</Text>
+                    <Text className="text-secondaryText text-center font-sans">
+                      No active emergency alerts at this time
+                    </Text>
+                  </View>
                 </View>
               }
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  className="bg-white border border-lightPurple rounded-2xl p-4 mx-4 mb-3"
+                  className="bg-white rounded-3xl p-5 mb-4 border-2 border-red-200 shadow-xl"
+                  style={{
+                    shadowColor: "#DC2626",
+                    shadowOffset: { width: 0, height: 6 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 12,
+                  }}
                   onPress={() => {
                     setTab("map");
                     setTimeout(() => {
@@ -296,9 +319,8 @@ export default function PoliceDashboard() {
                           500
                         );
                       }
-                      // Show a simple focus sheet using the same field names as boats
                       setFocusedBoat({
-                        name: `Boat ${item.boatId}`,
+                        name: `${item.boatId}`,
                         lat: item.lat,
                         lng: item.lng,
                         status: "sos",
@@ -306,15 +328,26 @@ export default function PoliceDashboard() {
                     }, 250);
                   }}
                 >
-                  <View className="flex-row items-center">
-                    <AlertTriangle color="#E53935" />
-                    <Text className="ml-2 text-blue font-bold">
-                      {item.boatId} — SOS
-                    </Text>
+                  <View className="flex-row items-center mb-3">
+                    <View className="bg-red-100 rounded-full p-3 mr-4">
+                      <AlertTriangle color="#DC2626" size={24} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-darkBlue font-heading font-bold text-xl">
+                        {item.boatId}
+                      </Text>
+                      <Text className="text-red-600 font-sans font-semibold text-lg">EMERGENCY SOS</Text>
+                    </View>
                   </View>
-                  <Text className="text-secondaryText mt-1">
-                    {fmtCoord(item.lat)}, {fmtCoord(item.lng)}
+                  <Text className="text-secondaryText font-sans text-base mb-3">
+                    📍 {fmtCoord(item.lat)}, {fmtCoord(item.lng)}
                   </Text>
+                  <View className="flex-row items-center justify-between">
+                    <View className="bg-red-600 rounded-full px-4 py-2">
+                      <Text className="text-white text-sm font-sans font-bold">HIGH PRIORITY</Text>
+                    </View>
+                    <Text className="text-accentText font-sans font-semibold">View on Map →</Text>
+                  </View>
                 </TouchableOpacity>
               )}
             />
@@ -322,9 +355,16 @@ export default function PoliceDashboard() {
         </View>
       )}
 
-      {/* MAP tab (unchanged) – shows boats; we also let SOS list jump here */}
+      {/* Enhanced MAP tab */}
       {tab === "map" && (
-        <View className="flex-1 mx-4 mb-4 mt-3 rounded-2xl overflow-hidden border border-lightPurple">
+        <View className="flex-1 mx-6 mb-6 mt-4 rounded-3xl overflow-hidden border-2 border-lightPurple shadow-2xl"
+          style={{
+            shadowColor: "#636CCB",
+            shadowOffset: { width: 0, height: 12 },
+            shadowOpacity: 0.2,
+            shadowRadius: 20,
+          }}
+        >
           <MapView
             ref={mapRef}
             style={{ flex: 1 }}
@@ -345,31 +385,31 @@ export default function PoliceDashboard() {
                 <Marker
                   key={`${b.boatId}-${b.lat}-${b.lng}`}
                   coordinate={{ latitude: b.lat, longitude: b.lng }}
-                  pinColor={isSOS ? "#E53935" : "#50589C"}
+                  pinColor={isSOS ? "#DC2626" : "#50589C"}
                   onPress={() => setFocusedBoat(b)}
                 >
                   {isSOS && (
-                    <View className="bg-red-600 px-2 py-0.5 rounded-full -mt-6">
-                      <Text className="text-white text-[10px]">SOS</Text>
+                    <View className="bg-red-600 px-3 py-1 rounded-full -mt-8 border-2 border-white shadow-lg">
+                      <Text className="text-white text-xs font-sans font-bold">🚨 SOS</Text>
                     </View>
                   )}
                   <Callout onPress={() => setFocusedBoat(b)}>
-                    <View style={{ maxWidth: 220 }}>
-                      <Text style={{ fontWeight: "700", color: "#3C467B", marginBottom: 4 }}>
+                    <View style={{ maxWidth: 240, padding: 12 }}>
+                      <Text style={{ fontWeight: "700", color: "#3C467B", marginBottom: 4, fontSize: 16 }}>
                         {b.name}
                       </Text>
-                      <Text style={{ color: "#3C467B" }}>
+                      <Text style={{ color: "#3C467B", fontSize: 14 }}>
                         {fmtCoord(b.lat)}, {fmtCoord(b.lng)}
                       </Text>
                       {isSOS && (
-                        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                          <AlertTriangle size={14} color="#E53935" />
-                          <Text style={{ color: "#E53935", marginLeft: 6, fontWeight: "600" }}>
-                            Active SOS
+                        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 6 }}>
+                          <AlertTriangle size={16} color="#DC2626" />
+                          <Text style={{ color: "#DC2626", marginLeft: 6, fontWeight: "600", fontSize: 14 }}>
+                            Active Emergency
                           </Text>
                         </View>
                       )}
-                      <Text style={{ color: "#6E8CFB", marginTop: 6 }}>Tap to open</Text>
+                      <Text style={{ color: "#6E8CFB", marginTop: 8, fontSize: 14 }}>Tap for details →</Text>
                     </View>
                   </Callout>
                 </Marker>
@@ -378,7 +418,13 @@ export default function PoliceDashboard() {
           </MapView>
 
           <TouchableOpacity
-            className="absolute right-3 bottom-3 bg-white/95 rounded-full px-3 py-2 border border-lightPurple"
+            className="absolute right-4 bottom-4 bg-white/95 rounded-2xl px-4 py-3 border border-lightPurple shadow-xl"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.2,
+              shadowRadius: 12,
+            }}
             onPress={() => {
               if (!boats.length || !mapRef.current) return;
               mapRef.current.fitToCoordinates(
@@ -388,132 +434,277 @@ export default function PoliceDashboard() {
             }}
           >
             <View className="flex-row items-center">
-              <Compass size={16} color="#3C467B" />
-              <Text className="ml-2 text-blue font-semibold">Fit all</Text>
+              <Compass size={20} color="#3C467B" />
+              <Text className="ml-2 text-blue font-sans font-semibold">Fit All Boats</Text>
             </View>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* REPORTS tab (unchanged UI; powered by verify/resolve handlers above) */}
+      {/* Enhanced REPORTS tab */}
       {tab === "reports" && (
         <View className="flex-1">
-          {/* filters */}
-          <View className="px-4 mt-3">
-            <View className="flex-row items-center mb-2">
-              <Text className="text-blue mr-2">Type:</Text>
-              <FilterChip value="all" current={reportType} onChange={setReportType} label="All" />
-              <FilterChip value="violation" current={reportType} onChange={setReportType} label="Violations" />
-              <FilterChip value="hazard" current={reportType} onChange={setReportType} label="Hazards" />
+          {/* Enhanced Filters */}
+          <View className="px-6 pt-6 pb-4 bg-white border-b border-lightPurple">
+            <View className="mb-4">
+              <Text className="text-darkBlue font-heading font-bold text-lg mb-3">📊 Report Type</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+                <FilterChip value="all" current={reportType} onChange={setReportType} label="📋 All Reports" />
+                <FilterChip value="violation" current={reportType} onChange={setReportType} label="⚖️ Violations" />
+                <FilterChip value="hazard" current={reportType} onChange={setReportType} label="⚠️ Hazards" />
+              </ScrollView>
             </View>
-            <View className="flex-row items-center">
-              <Text className="text-blue mr-2">Status:</Text>
-              <FilterChip value="all" current={statusFilter} onChange={setStatusFilter} label="All" />
-              <FilterChip value="pending" current={statusFilter} onChange={setStatusFilter} label="Pending" />
-              <FilterChip value="verified" current={statusFilter} onChange={setStatusFilter} label="Verified" />
-              <FilterChip value="resolved" current={statusFilter} onChange={setStatusFilter} label="Resolved" />
+            <View>
+              <Text className="text-darkBlue font-heading font-bold text-lg mb-3">🎯 Status Filter</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+                <FilterChip value="all" current={statusFilter} onChange={setStatusFilter} label="All Status" />
+                <FilterChip value="pending" current={statusFilter} onChange={setStatusFilter} label="⏳ Pending" />
+                <FilterChip value="verified" current={statusFilter} onChange={setStatusFilter} label="✅ Verified" />
+                <FilterChip value="resolved" current={statusFilter} onChange={setStatusFilter} label="✅ Resolved" />
+              </ScrollView>
             </View>
           </View>
 
           {loadingReports ? (
-            <ActivityIndicator style={{ marginTop: 16 }} />
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator size="large" color="#50589C" />
+              <Text className="text-darkBlue font-sans mt-4">Loading reports...</Text>
+            </View>
           ) : (
             <ScrollView
               contentContainerStyle={{ paddingBottom: 24 }}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              showsVerticalScrollIndicator={false}
             >
-              <SectionTitle>Violation Reports</SectionTitle>
-              {filteredViolations.length === 0 ? (
-                <Text className="text-secondaryText px-4 mb-4">None</Text>
-              ) : (
-                filteredViolations.map((r) => (
-                  <View key={r._id} className="bg-white border border-lightPurple rounded-2xl p-4 mx-4 mb-3">
-                    <Text className="text-blue font-bold">{r.violationType || "Violation"}</Text>
-                    <Text className="text-secondaryText mt-1">{r.description}</Text>
-
-                    {!!r?.evidence?.imageUrl?.length && (
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
-                        {r.evidence.imageUrl.map((u, i) => (
-                          <Image key={i} source={{ uri: u }} className="w-24 h-24 rounded-xl mr-2" />
-                        ))}
-                      </ScrollView>
-                    )}
-
-                    <View className="flex-row mt-3 space-x-3 items-center">
-                      <View className="px-2 py-1 rounded-full bg-[#EEF0FF]">
-                        <Text className="text-blue text-xs font-semibold capitalize">{r.status || "pending"}</Text>
-                      </View>
-
-                      {(r.status || "").toLowerCase() !== "verified" && (
-                        <TouchableOpacity className="px-3 py-2 bg-green-600 rounded-xl" onPress={() => onVerifyViolation(r._id)}>
-                          <View className="flex-row items-center">
-                            <Check size={16} color="white" />
-                            <Text className="text-white ml-2">Verify</Text>
+              <View className="px-6 pt-6">
+                {/* Violation Reports Section */}
+                <View className="mb-8">
+                  <View className="flex-row items-center justify-between mb-4">
+                    <Text className="text-darkBlue font-heading font-bold text-2xl">⚖️ Violation Reports</Text>
+                    <View className="bg-blueLight rounded-full px-3 py-1">
+                      <Text className="text-white text-sm font-sans font-semibold">
+                        {filteredViolations.length} reports
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  {filteredViolations.length === 0 ? (
+                    <View className="bg-lightPurple/30 rounded-3xl p-8 items-center border border-lightPurple">
+                      <Text className="text-4xl mb-4">📝</Text>
+                      <Text className="text-darkBlue font-heading font-bold text-xl mb-2">No Violation Reports</Text>
+                      <Text className="text-secondaryText font-sans text-center">
+                        No violation reports match your current filters
+                      </Text>
+                    </View>
+                  ) : (
+                    filteredViolations.map((r) => (
+                      <View key={r._id} className="bg-white rounded-3xl p-6 mb-4 border border-lightPurple shadow-xl"
+                        style={{
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 6 },
+                          shadowOpacity: 0.1,
+                          shadowRadius: 12,
+                        }}
+                      >
+                        <View className="flex-row justify-between items-start mb-3">
+                          <Text className="text-darkBlue font-heading font-bold text-xl flex-1 mr-4">
+                            {r.violationType || "Violation Report"}
+                          </Text>
+                          <View className={`px-3 py-2 rounded-full ${
+                            (r.status || "").toLowerCase() === 'verified' ? 'bg-green-100 border border-green-200' : 
+                            (r.status || "").toLowerCase() === 'resolved' ? 'bg-blue-100 border border-blue-200' : 
+                            'bg-yellow-100 border border-yellow-200'
+                          }`}>
+                            <Text className={`text-xs font-sans font-semibold capitalize ${
+                              (r.status || "").toLowerCase() === 'verified' ? 'text-green-800' : 
+                              (r.status || "").toLowerCase() === 'resolved' ? 'text-blue-800' : 
+                              'text-yellow-800'
+                            }`}>
+                              {r.status || "pending"}
+                            </Text>
                           </View>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
-                ))
-              )}
+                        </View>
+                        
+                        <Text className="text-secondaryText font-sans text-base leading-6 mb-4">
+                          {r.description}
+                        </Text>
 
-              <SectionTitle>Hazard Reports</SectionTitle>
-              {filteredHazards.length === 0 ? (
-                <Text className="text-secondaryText px-4">None</Text>
-              ) : (
-                filteredHazards.map((r) => (
-                  <View key={r._id} className="bg-white border border-lightPurple rounded-2xl p-4 mx-4 mb-3">
-                    <Text className="text-blue font-bold">{r.hazardType || "Hazard"}</Text>
-                    <Text className="text-secondaryText mt-1">{r.description}</Text>
+                        {!!r?.evidence?.imageUrl?.length && (
+                          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+                            {r.evidence.imageUrl.map((u, i) => (
+                              <Image key={i} source={{ uri: u }} className="w-28 h-28 rounded-2xl mr-3 border border-lightPurple" />
+                            ))}
+                          </ScrollView>
+                        )}
 
-                    {!!r?.evidence?.imageUrl?.length && (
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
-                        {r.evidence.imageUrl.map((u, i) => (
-                          <Image key={i} source={{ uri: u }} className="w-24 h-24 rounded-xl mr-2" />
-                        ))}
-                      </ScrollView>
-                    )}
-
-                    <View className="flex-row mt-3 items-center">
-                      <View className="px-2 py-1 rounded-full bg-[#EEF0FF] mr-2">
-                        <Text className="text-blue text-xs font-semibold capitalize">{r.status || "pending"}</Text>
+                        <View className="flex-row justify-between items-center pt-4 border-t border-lightPurple">
+                          <View className="flex-row items-center">
+                            <Text className="text-accentText text-sm font-sans">
+                              Reported by: {r.reporterId || "Anonymous"}
+                            </Text>
+                          </View>
+                          
+                          {(r.status || "").toLowerCase() !== "verified" && (
+                            <TouchableOpacity 
+                              className="bg-green-600 rounded-2xl px-5 py-3 shadow-lg"
+                              onPress={() => onVerifyViolation(r._id)}
+                              style={{
+                                shadowColor: "#000",
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.2,
+                                shadowRadius: 8,
+                              }}
+                            >
+                              <View className="flex-row items-center">
+                                <Check size={18} color="white" />
+                                <Text className="text-white font-sans font-semibold ml-2">Verify Report</Text>
+                              </View>
+                            </TouchableOpacity>
+                          )}
+                        </View>
                       </View>
+                    ))
+                  )}
+                </View>
 
-                      {(r.status || "").toLowerCase() !== "resolved" && (
-                        <TouchableOpacity className="px-3 py-2 bg-blue rounded-xl" onPress={() => onResolveHazard(r._id)}>
-                          <Text className="text-white font-semibold">Mark Resolved</Text>
-                        </TouchableOpacity>
-                      )}
+                {/* Hazard Reports Section */}
+                <View className="mb-8">
+                  <View className="flex-row items-center justify-between mb-4">
+                    <Text className="text-darkBlue font-heading font-bold text-2xl">⚠️ Hazard Reports</Text>
+                    <View className="bg-orange-500 rounded-full px-3 py-1">
+                      <Text className="text-white text-sm font-sans font-semibold">
+                        {filteredHazards.length} reports
+                      </Text>
                     </View>
                   </View>
-                ))
-              )}
+                  
+                  {filteredHazards.length === 0 ? (
+                    <View className="bg-lightPurple/30 rounded-3xl p-8 items-center border border-lightPurple">
+                      <Text className="text-4xl mb-4">🌊</Text>
+                      <Text className="text-darkBlue font-heading font-bold text-xl mb-2">No Hazard Reports</Text>
+                      <Text className="text-secondaryText font-sans text-center">
+                        No hazard reports match your current filters
+                      </Text>
+                    </View>
+                  ) : (
+                    filteredHazards.map((r) => (
+                      <View key={r._id} className="bg-white rounded-3xl p-6 mb-4 border border-lightPurple shadow-xl"
+                        style={{
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 6 },
+                          shadowOpacity: 0.1,
+                          shadowRadius: 12,
+                        }}
+                      >
+                        <View className="flex-row justify-between items-start mb-3">
+                          <Text className="text-darkBlue font-heading font-bold text-xl flex-1 mr-4">
+                            {r.hazardType || "Hazard Report"}
+                          </Text>
+                          <View className={`px-3 py-2 rounded-full ${
+                            (r.status || "").toLowerCase() === 'resolved' ? 'bg-blue-100 border border-blue-200' : 
+                            'bg-yellow-100 border border-yellow-200'
+                          }`}>
+                            <Text className={`text-xs font-sans font-semibold capitalize ${
+                              (r.status || "").toLowerCase() === 'resolved' ? 'text-blue-800' : 'text-yellow-800'
+                            }`}>
+                              {r.status || "pending"}
+                            </Text>
+                          </View>
+                        </View>
+                        
+                        <Text className="text-secondaryText font-sans text-base leading-6 mb-4">
+                          {r.description}
+                        </Text>
+
+                        {!!r?.evidence?.imageUrl?.length && (
+                          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+                            {r.evidence.imageUrl.map((u, i) => (
+                              <Image key={i} source={{ uri: u }} className="w-28 h-28 rounded-2xl mr-3 border border-lightPurple" />
+                            ))}
+                          </ScrollView>
+                        )}
+
+                        <View className="flex-row justify-between items-center pt-4 border-t border-lightPurple">
+                          <View className="flex-row items-center">
+                            <Text className="text-accentText text-sm font-sans">
+                              Severity: <Text className="font-semibold capitalize">{r.severity || "medium"}</Text>
+                            </Text>
+                          </View>
+                          
+                          {(r.status || "").toLowerCase() !== "resolved" && (
+                            <TouchableOpacity 
+                              className="bg-blue rounded-2xl px-5 py-3 shadow-lg"
+                              onPress={() => onResolveHazard(r._id)}
+                              style={{
+                                shadowColor: "#000",
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.2,
+                                shadowRadius: 8,
+                              }}
+                            >
+                              <Text className="text-white font-sans font-semibold">Mark Resolved</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      </View>
+                    ))
+                  )}
+                </View>
+              </View>
             </ScrollView>
           )}
         </View>
       )}
 
-      {/* Boat detail modal (used for both boats and focused alert we mapped to boat-shape) */}
+      {/* Enhanced Boat detail modal */}
       <Modal transparent animationType="slide" visible={!!focusedBoat} onRequestClose={() => setFocusedBoat(null)}>
-        <View className="flex-1 justify-end bg-black/30">
-          <View className="bg-white rounded-t-3xl p-4">
+        <View className="flex-1 justify-end bg-black/60">
+          <View className="bg-white rounded-t-3xl p-6 mx-2 mb-2 shadow-3xl border border-lightPurple"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: -8 },
+              shadowOpacity: 0.3,
+              shadowRadius: 20,
+            }}
+          >
             {focusedBoat && (
               <>
-                <Text className="text-blue font-bold text-xl">{focusedBoat.name || "Selected Boat"}</Text>
-                <Text className="text-secondaryText mt-1">
-                  {fmtCoord(focusedBoat.lat)}, {fmtCoord(focusedBoat.lng)} •{" "}
-                  {(focusedBoat.status || "active").toUpperCase()}
-                </Text>
-                <View className="flex-row mt-3 space-x-3">
-                  <View className="px-3 py-2 bg-lightPurple rounded-xl">
-                    <View className="flex-row items-center">
-                      <MapPin size={16} color="#3C467B" />
-                      <Text className="text-blue ml-2">Copy coords</Text>
+                <View className="flex-row items-center justify-between mb-4">
+                  <Text className="text-darkBlue font-heading font-bold text-2xl">{focusedBoat.name || "Selected Boat"}</Text>
+                  {(focusedBoat.status || "").toLowerCase() === "sos" && (
+                    <View className="bg-red-600 rounded-full px-3 py-1">
+                      <Text className="text-white text-sm font-sans font-bold">🚨 EMERGENCY</Text>
                     </View>
-                  </View>
+                  )}
                 </View>
-                <TouchableOpacity className="mt-4 bg-blue rounded-2xl py-3 items-center" onPress={() => setFocusedBoat(null)}>
-                  <Text className="text-white font-bold">Close</Text>
+                <Text className="text-secondaryText font-sans text-base mb-6">
+                  📍 {fmtCoord(focusedBoat.lat)}, {fmtCoord(focusedBoat.lng)}
+                </Text>
+                <View className="flex-row space-x-3 mb-6">
+                  <TouchableOpacity className="bg-lightPurple rounded-2xl px-4 py-3 flex-1">
+                    <View className="flex-row items-center justify-center">
+                      <MapPin size={18} color="#3C467B" />
+                      <Text className="text-blue font-sans font-semibold ml-2">Copy Coordinates</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity className="bg-blueLight rounded-2xl px-4 py-3 flex-1">
+                    <View className="flex-row items-center justify-center">
+                      <Compass size={18} color="white" />
+                      <Text className="text-white font-sans font-semibold ml-2">Navigate To</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity 
+                  className="bg-blue rounded-2xl py-4 items-center shadow-xl"
+                  onPress={() => setFocusedBoat(null)}
+                  style={{
+                    shadowColor: "#636CCB",
+                    shadowOffset: { width: 0, height: 6 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 12,
+                  }}
+                >
+                  <Text className="text-white font-heading font-bold text-lg">Close Details</Text>
                 </TouchableOpacity>
               </>
             )}

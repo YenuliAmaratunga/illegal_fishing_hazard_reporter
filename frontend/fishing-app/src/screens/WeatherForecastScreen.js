@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"; 
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Dimensions,
 } from "react-native";
 import axios from "axios";
 import * as Location from "expo-location";
@@ -80,8 +81,17 @@ export default function WeatherForecastScreen() {
 
   if (!weather)
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-blue text-lg">Unable to load weather data.</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <Text style={{ color: "#3C467B", fontSize: 18 }}>
+          Unable to load weather data.
+        </Text>
       </View>
     );
 
@@ -89,34 +99,48 @@ export default function WeatherForecastScreen() {
   const locationName = currentWeather?.location ?? "Unknown";
 
   const getWaveColor = (h) => {
-    if (!h) return "text-white";
-    if (h > 3) return "text-red-500";
-    if (h > 1.5) return "text-yellow-500";
-    return "text-darkBlue";
+    if (!h) return "#fff";
+    if (h > 3) return "#EF4444"; // red
+    if (h > 1.5) return "#FACC15"; // yellow
+    return "#000435"; // dark blue
   };
 
   const getWindColor = (w) => {
-    if (!w) return "text-white";
-    if (w > 40) return "text-red-500";
-    if (w > 20) return "text-yellow-400";
-    return "text-blue-500";
+    if (!w) return "#fff";
+    if (w > 40) return "#EF4444";
+    if (w > 20) return "#FBBF24";
+    return "#3C467B";
   };
 
   const Row = ({ icon, label, value, colorClass, labelColor, iconColor }) => (
-    <View className="flex-row justify-between items-center mt-3">
-      <View className="flex-row items-center">
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 12,
+        alignItems: "center",
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
         <MaterialCommunityIcons
           name={icon}
           size={22}
           color={iconColor ?? "#fff"}
         />
         <Text
-          className={`${labelColor ?? "text-white"} text-base font-bold ml-2`}
+          style={{
+            color: labelColor ?? "#fff",
+            fontSize: 16,
+            fontWeight: "600",
+            marginLeft: 8,
+          }}
         >
           {label}
         </Text>
       </View>
-      <Text className={`text-base font-semibold ${colorClass ?? "text-white"}`}>
+      <Text
+        style={{ fontSize: 16, fontWeight: "700", color: colorClass ?? "#fff" }}
+      >
         {value}
       </Text>
     </View>
@@ -126,14 +150,33 @@ export default function WeatherForecastScreen() {
     if (!marine?.hourly?.wave_height) return <Text>No hourly data</Text>;
     const hoursToShow = marine.hourly.wave_height.slice(0, 7);
     return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 8 }}
+      >
         {hoursToShow.map((wave, idx) => (
-          <View
+          <LinearGradient
             key={idx}
-            className="bg-darkPurple w-50 m-2 p-4 rounded-2xl shadow-md"
-            style={{ elevation: 3 }}
+            colors={["#636CCB", "#6E8CFB"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              width: 170,
+              margin: 6,
+              padding: 14,
+              borderRadius: 20,
+              elevation: 4,
+            }}
           >
-            <Text className="text-white text-base font-bold mb-2">
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: "700",
+                marginBottom: 6,
+              }}
+            >
               Hour {idx + 1}
             </Text>
             <Row
@@ -144,7 +187,7 @@ export default function WeatherForecastScreen() {
             />
             <Row
               icon="navigation-variant"
-              label="Current : "
+              label="Current :"
               value={`${marine.hourly.ocean_current_velocity[idx] ?? "--"} m/s`}
             />
             <Row
@@ -152,7 +195,7 @@ export default function WeatherForecastScreen() {
               label="Direction :"
               value={`${marine.hourly.wave_direction[idx] ?? "--"}°`}
             />
-          </View>
+          </LinearGradient>
         ))}
       </ScrollView>
     );
@@ -161,14 +204,33 @@ export default function WeatherForecastScreen() {
   const renderDaily = () => {
     if (!marine?.daily?.wave_height_max) return <Text>No daily data</Text>;
     return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 8 }}
+      >
         {marine.daily.wave_height_max.map((waveMax, idx) => (
-          <View
+          <LinearGradient
             key={idx}
-            className="bg-darkPurple w-50 m-2 p-4 rounded-2xl shadow-md"
-            style={{ elevation: 3 }}
+            colors={["#636CCB", "#6E8CFB"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              width: 187,
+              margin: 6,
+              padding: 14,
+              borderRadius: 20,
+              elevation: 4,
+            }}
           >
-            <Text className="text-white text-base font-bold mb-2">
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: "700",
+                marginBottom: 6,
+              }}
+            >
               Day {idx + 1}
             </Text>
             <Row
@@ -187,7 +249,7 @@ export default function WeatherForecastScreen() {
               label="Wind Wave:"
               value={`${marine.daily.wind_wave_height_max[idx] ?? "--"} m`}
             />
-          </View>
+          </LinearGradient>
         ))}
       </ScrollView>
     );
@@ -223,10 +285,7 @@ export default function WeatherForecastScreen() {
         text: "Moderate waves — proceed with caution.",
       });
     } else {
-      tips.push({
-        icon: "waves",
-        text: "Wave conditions are calm and safe.",
-      });
+      tips.push({ icon: "waves", text: "Wave conditions are calm and safe." });
     }
 
     if (currentWeather?.conditions?.toLowerCase().includes("rain")) {
@@ -240,27 +299,26 @@ export default function WeatherForecastScreen() {
       icon: "map-marker-alert",
       text: "Always log your route and check local alerts before departure.",
     });
-
     return tips;
   };
 
   const quickTips = generateTips();
   const toggleTips = () => {
-    LayoutAnimation.easeInEaseOut();
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setShowTips(!showTips);
   };
 
-  // Gradient Button component for "View Route Hazard Map"
   const GradientActionButton = ({ onPress, text }) => (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
       style={{
-        borderRadius: 20,
+        borderRadius: 25,
         overflow: "hidden",
         elevation: 5,
         width: "100%",
-        marginVertical: 10,
+        alignSelf: "center",
+        marginVertical: 16,
       }}
     >
       <LinearGradient
@@ -268,15 +326,26 @@ export default function WeatherForecastScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
-          paddingVertical: 14,
+          paddingVertical: 16,
           alignItems: "center",
-          borderRadius: 20,
+          borderRadius: 25,
           flexDirection: "row",
           justifyContent: "center",
         }}
       >
-        <MaterialCommunityIcons name="map-search-outline" size={22} color="#fff" />
-        <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16, marginLeft: 8 }}>
+        <MaterialCommunityIcons
+          name="map-search-outline"
+          size={22}
+          color="#fff"
+        />
+        <Text
+          style={{
+            color: "#fff",
+            fontWeight: "800",
+            fontSize: 17,
+            marginLeft: 8,
+          }}
+        >
           {text}
         </Text>
       </LinearGradient>
@@ -284,76 +353,142 @@ export default function WeatherForecastScreen() {
   );
 
   return (
-    <View className="flex-1 bg-white px-4 pt-12">
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#fff",
+        paddingHorizontal: 16,
+        paddingTop: 48,
+      }}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Text className="text-xl font-bold text-blue text-center mb-4">
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "800",
+            color: "#3C467B",
+            textAlign: "center",
+            marginBottom: 12,
+          }}
+        >
           Forecast for {locationName}, Sri Lanka
         </Text>
 
-        {(currentWeather?.windSpeed > 30 || marine?.current?.wave_height > 2.5) && (
-          <View className="bg-red-500 rounded-xl p-3 mb-4">
-            <Text className="text-white text-center font-bold text-lg">
+        {(currentWeather?.windSpeed > 30 ||
+          marine?.current?.wave_height > 2.5) && (
+          <View
+            style={{
+              backgroundColor: "#EF4444",
+              borderRadius: 16,
+              padding: 12,
+              marginBottom: 12,
+            }}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                textAlign: "center",
+                fontWeight: "700",
+                fontSize: 16,
+              }}
+            >
               ⚠️ Dangerous conditions ahead! Sail with caution
             </Text>
           </View>
         )}
 
+        {/* Current Conditions */}
         <View
-          className="bg-lightPurple rounded-2xl p-5 mb-6 shadow-lg"
-          style={{ elevation: 4 }}
+          style={{
+            backgroundColor: "#E0E7FF",
+            borderRadius: 20,
+            padding: 16,
+            marginBottom: 16,
+            borderWidth: 2,
+            borderColor: "#3C467B",
+            elevation: 4,
+          }}
         >
-          <Text className="text-blue-400 text-lg font-bold mb-3 text-center">
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "800",
+              color: "#3C467B",
+              textAlign: "center",
+              marginBottom: 6,
+            }}
+          >
             Current Conditions
           </Text>
+          <View
+            style={{
+              height: 1,
+              backgroundColor: "#3C467B",
+              opacity: 0.3,
+              marginBottom: 12,
+            }}
+          />
           <Row
             icon="thermometer"
             label="Temperature"
             value={`${currentWeather?.temperature ?? "--"} °C`}
-            labelColor="text-blue-400"
+            labelColor="#3C467B"
             iconColor="#60A5FA"
-            colorClass="text-blue-400"
+            colorClass="#3C467B"
           />
           <Row
             icon="weather-windy"
             label="Wind Speed"
             value={`${currentWeather?.windSpeed ?? "--"} km/h`}
             colorClass={getWindColor(currentWeather?.windSpeed)}
-            labelColor="text-blue-400"
+            labelColor="#3C467B"
             iconColor="#60A5FA"
           />
           <Row
             icon="weather-cloudy"
             label="Sky"
             value={currentWeather?.conditions ?? "--"}
-            labelColor="text-blue-400"
+            labelColor="#3C467B"
             iconColor="#60A5FA"
-            colorClass="text-blue-400"
+            colorClass="#3C467B"
           />
           <Row
             icon="waves"
             label="Wave Height"
             value={`${marine?.current?.wave_height ?? "--"} m`}
             colorClass={getWaveColor(marine?.current?.wave_height)}
-            labelColor="text-blue-400"
+            labelColor="#3C467B"
             iconColor="#60A5FA"
           />
         </View>
 
-        <View className="flex-row justify-center mb-6 rounded-full">
+        {/* Forecast Type Tabs */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            marginBottom: 16,
+          }}
+        >
           {["Hourly", "Daily"].map((type) => (
             <TouchableOpacity
               key={type}
-              className={`px-6 py-2 rounded-full m-1 ${
-                forecastType === type
-                  ? "bg-blueLight"
-                  : "bg-white border border-blueLight"
-              }`}
               onPress={() => setForecastType(type)}
+              style={{
+                paddingHorizontal: 18,
+                paddingVertical: 8,
+                borderRadius: 30,
+                margin: 4,
+                backgroundColor: forecastType === type ? "#50589C" : "#fff",
+                borderWidth: forecastType === type ? 0 : 1,
+                borderColor: "#50589C",
+              }}
             >
               <Text
-                className={`font-bold ${
-                  forecastType === type ? "text-white" : "text-blue"
-                }`}
+                style={{
+                  fontWeight: "700",
+                  color: forecastType === type ? "#fff" : "#3C467B",
+                }}
               >
                 {type}
               </Text>
@@ -361,43 +496,77 @@ export default function WeatherForecastScreen() {
           ))}
         </View>
 
+        {/* Forecast Cards */}
         {forecastType === "Hourly" ? renderHourly() : renderDaily()}
 
-        <View className="bg-blueLight rounded-2xl mt-8 mb-6 shadow-md">
+        {/* Quick Tips */}
+        <View
+          style={{
+            backgroundColor: "#50589C",
+            borderRadius: 20,
+            marginTop: 16,
+            marginBottom: 16,
+            elevation: 3,
+          }}
+        >
           <TouchableOpacity
             onPress={toggleTips}
-            className="flex-row justify-between items-center px-5 py-4"
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+            }}
           >
-            <View className="flex-row items-center">
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <MaterialCommunityIcons
                 name="lightbulb-on-outline"
                 size={22}
                 color="#fff"
               />
-              <Text className="text-white text-lg font-bold ml-2">
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 16,
+                  fontWeight: "700",
+                  marginLeft: 8,
+                }}
+              >
                 {showTips ? "Hide Quick Tips" : "Show Quick Tips"}
               </Text>
             </View>
-            <Text className="text-white text-lg">{showTips ? "▼" : "▲"}</Text>
+            <Text style={{ color: "#fff", fontSize: 16 }}>
+              {showTips ? "▼" : "▲"}
+            </Text>
           </TouchableOpacity>
 
           {showTips && (
-            <View className="px-6 pb-4">
+            <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
               {quickTips.map((tip, idx) => (
-                <View key={idx} className="flex-row items-center mb-2">
+                <View
+                  key={idx}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 6,
+                  }}
+                >
                   <MaterialCommunityIcons
                     name={tip.icon}
                     size={20}
                     color="#fff"
                   />
-                  <Text className="text-white ml-3">{tip.text}</Text>
+                  <Text style={{ color: "#fff", marginLeft: 8, fontSize: 14 }}>
+                    {tip.text}
+                  </Text>
                 </View>
               ))}
             </View>
           )}
         </View>
 
-        {/* Refactored Gradient "View Route Hazard Map" Button */}
+        {/* View Route Hazard Map Button */}
         <GradientActionButton
           text="View Route Hazard Map"
           onPress={() => navigation.navigate("RouteHazardMap")}

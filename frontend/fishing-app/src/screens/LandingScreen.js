@@ -11,6 +11,13 @@ export default function LandingScreen({ navigation }) {
     ta: { register: "பதிவு", login: "உள்நுழையவும்" },
   };
 
+  // Native language labels for selector buttons
+  const langLabelsNative = {
+    en: "EN",
+    si: "සිං",
+    ta: "த",
+  };
+
   // Ensure fallback if language key is missing
   const currentLabels = labels[language] || labels.en;
 
@@ -110,7 +117,7 @@ export default function LandingScreen({ navigation }) {
                     fontWeight: "600",
                   }}
                 >
-                  {lang.toUpperCase()}
+                  {langLabelsNative[lang]}
                 </Text>
               </TouchableOpacity>
             ))}

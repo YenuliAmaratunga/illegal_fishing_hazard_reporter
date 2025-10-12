@@ -159,3 +159,6 @@ export const resolveHazard = (id) => {
 
 export const getMyReports = (reporterId) =>
   jget(`${GPS_BASE}/api/reports/my?reporterId=${encodeURIComponent(reporterId)}`, "myReports");
+
+export const getActiveAlerts = () =>
+  jget(`${POLICE_BASE}/api/police/alerts`, "getActiveAlerts");

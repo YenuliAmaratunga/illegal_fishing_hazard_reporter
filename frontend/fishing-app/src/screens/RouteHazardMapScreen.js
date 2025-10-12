@@ -63,8 +63,7 @@ export default function RouteHazardMapScreen() {
         setToken(parsed.token);
         setUserId(parsed.userId);
 
-        // 🔹 Fetch user's latest trip from backend
-        const res = await axios.get(`${TRIP_BASE}/${parsed.userId}`, {
+        const res = await axios.get(`${TRIP_BASE}/api/Trip/latestTrip`, {
           headers: { Authorization: `Bearer ${parsed.token}` },
         });
 

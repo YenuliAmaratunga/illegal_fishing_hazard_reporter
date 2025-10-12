@@ -34,7 +34,6 @@ const BoatSchema = new mongoose.Schema({
     engineType : {type : String, required : true},
     homePort : {type : String, required : true},
     insuranceNumber :{type : String, required : true, unique : true},
-    safetyEquipment : [{type : String}],
     images: {
     type: [ImageSchema],
     required: true,

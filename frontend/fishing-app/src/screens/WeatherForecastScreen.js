@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import * as Location from "expo-location";
+import * as Animatable from "react-native-animatable";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -53,11 +54,26 @@ export default function WeatherForecastScreen() {
     fetchWeather();
   }, []);
 
-  //TO DO ADD LOADING ICON HERE
   if (loading)
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#3C467B" />
+        <Animatable.View animation="pulse" iterationCount="infinite">
+          <MaterialCommunityIcons
+            name="weather-sunny"
+            size={70}
+            color="#3C467B"
+            style={{ marginBottom: 10 }}
+          />
+        </Animatable.View>
+        <Animatable.Text
+          animation="fadeIn"
+          iterationCount="infinite"
+          duration={2000}
+          className="text-blue text-lg font-semibold mb-3"
+        >
+          Fetching weather data...
+        </Animatable.Text>
+        <ActivityIndicator size="large" color="#636CCB" />
       </View>
     );
 
@@ -342,9 +358,7 @@ export default function WeatherForecastScreen() {
                 {showTips ? "Hide Quick Tips" : "Show Quick Tips"}
               </Text>
             </View>
-            <Text className="text-white text-lg">
-              {showTips ? "▼" : "▲"}
-            </Text>
+            <Text className="text-white text-lg">{showTips ? "▼" : "▲"}</Text>
           </TouchableOpacity>
 
           {showTips && (

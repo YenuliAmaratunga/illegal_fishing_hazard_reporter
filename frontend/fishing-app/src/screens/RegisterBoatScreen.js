@@ -137,7 +137,7 @@ export default function RegisterBoatScreen() {
         {
           text: "OK",
           onPress: () =>
-            navigation.replace("Fisherman", { language: "en", token: token, userId: userId }),
+            navigation.replace("MainTabs"),
         },
       ]);
     } catch (err) {

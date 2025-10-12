@@ -64,7 +64,7 @@ export default function RoleLoginScreen() {
         );
 
         if (role === "fisherman") {
-          navigation.navigate("Home"); 
+          navigation.navigate("MainTabs"); 
         }if (role === "marine") {
           navigation.reset({ index: 0, routes: [{ name: "PoliceDashboard" }] });
         } 
@@ -117,7 +117,7 @@ export default function RoleLoginScreen() {
 
         <TouchableOpacity
           onPress={handleSubmit}
-          className="bg-blue-600 py-3 rounded-xl"
+          className="bg-blue py-3 rounded-xl"
         >
           <Text className="text-white text-center font-bold text-lg">
             {translations[language].login}

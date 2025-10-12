@@ -6,7 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function FishermanLandingScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { language, token,userId} = route.params;
+  // const { language, token,userId} = route.params;
+  const language = 'en';
 
   const translations = {
     si: {
@@ -54,7 +55,7 @@ export default function FishermanLandingScreen() {
 
         if(key == 'trip'){
 
-          navigation.navigate("RegisterTrip");
+          navigation.navigate("TripRegistration");
         }
 
         if(key == 'gear'){
@@ -74,30 +75,6 @@ export default function FishermanLandingScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom Tabs */}
-      <SafeAreaView edges={["bottom"]} className="bg-white">
-        <View className="flex-row justify-around items-center h-16 border-t border-gray-300 shadow-lg">
-          <TouchableOpacity className="items-center" onPress={() => navigation.navigate("MainTabs")}>
-            <Text className="text-2xl">🏠</Text>
-            <Text>Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity className="items-center" onPress={() => {}}>
-            <Text className="text-2xl">⛵</Text>
-            <Text>Fishing</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity className="items-center" onPress={() => navigation.navigate("Alerts")}>
-            <Text className="text-2xl">⚠️</Text>
-            <Text>Alerts</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity className="items-center" onPress={() => navigation.navigate("Profile", { language, token })}>
-            <Text className="text-2xl">👤</Text>
-            <Text>Profile</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
     </View>
   );
 }

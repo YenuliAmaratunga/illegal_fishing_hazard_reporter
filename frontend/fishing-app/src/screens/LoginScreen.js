@@ -7,7 +7,8 @@ export default function LoginScreen(){
 
 
     const route = useRoute();
-    const {language} = route.params;
+    //const {language} = route.params;
+     const language = route.params?.language ?? "en";
      const navigation = useNavigation();
 
     const translation = {
@@ -57,7 +58,7 @@ export default function LoginScreen(){
 
        </TouchableOpacity>
        <TouchableOpacity
-       className="bg-blue-500 rounded-2xl w-full py-8 mb-6 justify-center items-center"
+       className="bg-blue rounded-2xl w-full py-8 mb-6 justify-center items-center"
        onPress={()=> goToForm("fisherman")}>
        <Text className="text-xl font-semibold text-white text-center">
                  {translation[language].fisherman}

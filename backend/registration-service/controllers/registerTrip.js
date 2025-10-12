@@ -59,3 +59,30 @@ exports.registerTrip = async (req, res) => {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// ✅ New Endpoint — Get Latest Trip for Logged-in Fisherman
+exports.getLatestTrip = async (req, res) => {
+  try {
+    const fishermanId = req.user.id;
+
+    const latestTrip = await Trip.findOne({ fishermanId })
+      .sort({ createdAt: -1 }) // needs timestamps in schema
+      .populate('boat participantIds', 'name registrationNumber nationalId')
+      .exec();
+
+    if (!latestTrip) {
+      return res.status(404).json({
+        message: "No trips found for this fisherman",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Latest trip fetched successfully",
+      trip: latestTrip,
+    });
+
+  } catch (error) {
+    console.error("Error fetching latest trip:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

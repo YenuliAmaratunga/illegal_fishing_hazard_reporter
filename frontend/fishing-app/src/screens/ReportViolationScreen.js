@@ -18,6 +18,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { gpsPost, gpsPut } from "../api/client";
 import { GPS_BASE } from "../api/config";
 import { uploadToCloudinary } from "../utils/uploadImage";
+import { Picker } from "@react-native-picker/picker";
 
 export default function ReportViolationScreen() {
   // create vs edit
@@ -52,30 +53,60 @@ export default function ReportViolationScreen() {
   }, [mode, existing]);
 
   // Camera → upload → add URL
-  const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      return Alert.alert("Permission required", "Need camera permission to take photos");
-    }
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: false,
-      quality: 0.8,
-      aspect: [4, 3],
-    });
-    if (result.canceled) return;
-
-    try {
-      setUploading(true);
-      // ⬇️ Upload to Cloudinary; returns an https URL
-      const url = await uploadToCloudinary(result.assets[0].uri);
-      setEvidence((prev) => [...prev, url]);
-    } catch (e) {
-      console.log("Upload error:", e?.message);
-      Alert.alert("Upload failed", e?.message || "Could not upload image");
-    } finally {
-      setUploading(false);
-    }
-  };
+const takePhoto = async () => {
+  Alert.alert(
+    "Add Photo",
+    "Choose photo source",
+    [
+      {
+        text: "Camera",
+        onPress: async () => {
+          const permission = await ImagePicker.requestCameraPermissionsAsync();
+          if (!permission.granted) {
+            return Alert.alert("Permission required", "Need camera permission to take photos");
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: false,
+            quality: 0.8,
+            aspect: [4, 3],
+          });
+          if (!result.canceled) await handleImageUpload(result.assets[0].uri);
+        }
+      },
+      {
+        text: "Gallery",
+        onPress: async () => {
+          const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!permission.granted) {
+            return Alert.alert("Permission required", "Need gallery permission to select photos");
+          }
+          const result = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: false,
+            quality: 0.8,
+            aspect: [4, 3],
+          });
+          if (!result.canceled) await handleImageUpload(result.assets[0].uri);
+        }
+      },
+      {
+        text: "Cancel",
+        style: "cancel"
+      }
+    ]
+  );
+};
+const handleImageUpload = async (uri) => {
+  try {
+    setUploading(true);
+    const url = await uploadToCloudinary(uri);
+    setEvidence((prev) => [...prev, url]);
+  } catch (e) {
+    console.log("Upload error:", e?.message);
+    Alert.alert("Upload failed", e?.message || "Could not upload image");
+  } finally {
+    setUploading(false);
+  }
+};
 
   const removePhoto = (indexToRemove) => {
     setEvidence((prev) => prev.filter((_, i) => i !== indexToRemove));
@@ -158,28 +189,23 @@ export default function ReportViolationScreen() {
 
         {/* Violation Type */}
         <View className="mt-4">
-          <Text className="text-blue text-[17px] font-extrabold tracking-wide mb-2">
-            Violation Type <Text className="text-red-600">*</Text>
-          </Text>
-          <View className="flex-row flex-wrap gap-2 mb-1">
-            {VIOLATION_OPTIONS.map((label) => {
-              const active = violationType === label;
-              return (
-                <TouchableOpacity
-                  key={label}
-                  className={`px-4 py-2 rounded-full border ${
-                    active ? "bg-blueLight border-blueLight" : "bg-white border-blueLight"
-                  }`}
-                  onPress={() => setViolationType(label)}
-                >
-                  <Text className={`font-semibold ${active ? "text-white" : "text-blue"}`}>
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
+  <Text className="text-blue text-[17px] font-extrabold tracking-wide mb-2">
+    Violation Type <Text className="text-red-600">*</Text>
+  </Text>
+  <View className="bg-white border border-blueLight rounded-2xl overflow-hidden">
+    <Picker
+      selectedValue={violationType}
+      onValueChange={(itemValue) => setViolationType(itemValue)}
+      style={{ color: '#3E5FC9' }}
+      dropdownIconColor="#3E5FC9"
+    >
+      <Picker.Item label="Select violation type..." value="" />
+      {VIOLATION_OPTIONS.map((label) => (
+        <Picker.Item key={label} label={label} value={label} />
+      ))}
+    </Picker>
+  </View>
+</View>
 
         {/* Description */}
         <View className="mt-6">
@@ -220,14 +246,14 @@ export default function ReportViolationScreen() {
           )}
 
           <TouchableOpacity
-            className="bg-white border border-blueLight rounded-2xl p-4 items-center"
-            onPress={takePhoto}
-            disabled={uploading}
-          >
-            <Text className="text-blue text-base font-semibold">
-              📷 {uploading ? "Uploading…" : evidence.length > 0 ? "Add another photo" : "Take photo evidence"}
-            </Text>
-          </TouchableOpacity>
+  className="bg-white border border-blueLight rounded-2xl p-4 items-center"
+  onPress={takePhoto}
+  disabled={uploading}
+>
+  <Text className="text-blue text-base font-semibold">
+    📷 {uploading ? "Uploading…" : evidence.length > 0 ? "Add more photos" : "Add photo evidence"}
+  </Text>
+</TouchableOpacity>
 
           {/* ✅ Your “uploading” indicator lives right here */}
           {uploading && <Text className="text-blue mt-2">Uploading photo…</Text>}

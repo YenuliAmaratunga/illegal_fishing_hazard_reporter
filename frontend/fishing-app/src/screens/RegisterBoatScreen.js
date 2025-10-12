@@ -126,7 +126,7 @@ export default function RegisterBoatScreen() {
         });
       });
 
-      await axios.post(`${AUTH_BASE}/registerBoat`, formData, {
+      await axios.post(`${AUTH_BASE}/api/Boat/registerBoat`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
@@ -137,7 +137,7 @@ export default function RegisterBoatScreen() {
         {
           text: "OK",
           onPress: () =>
-            navigation.replace("Fisherman", { language: "en", token: token, userId: userId }),
+            navigation.replace("MainTabs"),
         },
       ]);
     } catch (err) {

@@ -18,8 +18,8 @@ const hazardReportSchema = new mongoose.Schema({
         default: 'medium'
     },
     evidence: {
-        imageUrl: String,
-        videoUrl: String
+        imageUrl: [String],
+        videoUrl: [String]
     },
     status: {
         type: String,

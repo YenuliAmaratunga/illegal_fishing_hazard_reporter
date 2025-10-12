@@ -19,7 +19,7 @@ exports.registerBoat = async(req,res)=>{
 
     try{
 
-        const{boatName,registrationNumber,boatType,length,capacity,engineType,homePort,insuranceNumber,safetyEquipment} = req.body;
+        const{boatName,registrationNumber,boatType,length,capacity,engineType,homePort,insuranceNumber} = req.body;
         const licenseFile = req.files?.license?.[0];
         const imageFiles = req.files?.images || [];
 
@@ -72,7 +72,6 @@ const licenseMeta = {
       engineType,
       homePort,
       insuranceNumber,
-      safetyEquipment,
       images: imagesMeta,
       license: licenseMeta
     });

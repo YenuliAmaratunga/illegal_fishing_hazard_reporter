@@ -12,8 +12,8 @@ const violationReportSchema = new mongoose.Schema({
     },
     description: String,
     evidence: {
-        imageUrl: String,
-        videoUrl: String
+        imageUrl: [String],
+        videoUrl: [String]
     },
     location: {
         latitude: Number,

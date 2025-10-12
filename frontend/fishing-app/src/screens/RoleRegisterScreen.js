@@ -1,7 +1,22 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  StyleSheet,
+  StatusBar,
+  Platform,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRoute, useNavigation } from "@react-navigation/native";
+
 import axios from "axios";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
+
 
 const AUTH_BASE =
   "https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/registration-service/v1.0";
@@ -10,8 +25,9 @@ export default function RoleRegisterScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { role, language } = route.params || { role: "fisherman", language: "en" };
+  const [dob, setDob] = useState(null);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-  // Common form state
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -26,11 +42,17 @@ export default function RoleRegisterScreen() {
     organization: "",
   });
 
-  const [showPassword, setShowPassword] = useState(false); // password toggle
+  const [showPassword, setShowPassword] = useState(false);
+  const showDatePicker = () => setDatePickerVisibility(true);
+  const hideDatePicker = () => setDatePickerVisibility(false);
+  const handleConfirm = (date) => {
+  setDob(date);
+  hideDatePicker();
+};
+
 
   const handleChange = (key, value) => setForm({ ...form, [key]: value });
 
-  // Translations
   const translations = {
     en: {
       name: "Full Name",
@@ -45,7 +67,10 @@ export default function RoleRegisterScreen() {
       email: "Email",
       organization: "Organization Name",
       submit: "Submit",
-      heading: `${role.toUpperCase()} Registration`,
+      heading: "Join With AquaWatch!",
+      description: "Create your account to help protect our oceans.",
+      account: "Already Have An Account?",
+      login: "Login",
       show: "Show",
       hide: "Hide",
     },
@@ -62,9 +87,12 @@ export default function RoleRegisterScreen() {
       email: "ඊමේල්",
       organization: "ආයතන නාමය",
       submit: "යොමු කරන්න",
-      heading: `${role.toUpperCase()} ලියාපදිංචිය`,
+      heading: "AquaWatch සමඟ එක්වන්න",
+      description: "අපගේ මුහුදු ආරක්ෂා කිරීමට උදව් වීමට ඔබගේ ගිණුම සාදන්න.",
+      account: "දැනටමත් ගිණුමක් තිබේද?",
+      login: "ඇතුල් වන්න",
       show: "පෙන්වන්න",
-      hide: "මැවිය යුතුය",
+      hide: "සඟවන්න",
     },
     ta: {
       name: "முழு பெயர்",
@@ -79,7 +107,10 @@ export default function RoleRegisterScreen() {
       email: "மின்னஞ்சல்",
       organization: "அமைப்பின் பெயர்",
       submit: "சமர்ப்பிக்கவும்",
-      heading: `${role.toUpperCase()} பதிவு`,
+      heading: "AquaWatch உடன் சேருங்கள்",
+      description: "எங்கள் கடல்களை பாதுகாக்க உதவ உங்கள் கணக்கை உருவாக்குங்கள்.",
+      account: "ஏற்கனவே கணக்கு உள்ளதா?",
+      login: "உள்நுழைய",
       show: "காண்பி",
       hide: "மறை",
     },
@@ -118,8 +149,9 @@ export default function RoleRegisterScreen() {
         });
       }
 
-      //const res = await axios.post("http://192.168.8.121:8080/api/User/registerUser", payload);
-      const res = await axios.post(`${AUTH_BASE}/api/User/registerUser`, payload, { timeout: 12000 });
+      const res = await axios.post(`${AUTH_BASE}/api/User/registerUser`, payload, {
+        timeout: 12000,
+      });
 
       Alert.alert("Success", res.data.message);
       navigation.goBack();
@@ -130,69 +162,73 @@ export default function RoleRegisterScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-white p-6">
-      <Text className="text-2xl font-bold text-center mb-6">
-        {translations[language].heading}
-      </Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Status bar gradient */}
+
+
+      {/* Heading & description below gradient */}
+      <View style={{ marginTop: 20, alignItems: "center" }}>
+        <Text style={styles.headingText}>{translations[language].heading}</Text>
+        <Text style={styles.descriptionText}>{translations[language].description}</Text>
+      </View>
 
       {/* Common Fields */}
       <TextInput
-        className="border p-3 rounded mb-4"
+        style={styles.input}
         placeholder={translations[language].name}
         value={form.name}
         onChangeText={(t) => handleChange("name", t)}
-        keyboardType="default"
       />
       <TextInput
-        className="border p-3 rounded mb-4"
+        style={styles.input}
         placeholder={translations[language].phone}
         value={form.phone}
         onChangeText={(t) => handleChange("phone", t)}
         keyboardType="phone-pad"
       />
 
-      {/* Password with toggle */}
-      <View className="mb-4 relative">
+      {/* Password */}
+      <View style={styles.passwordContainer}>
         <TextInput
-          className="border p-3 rounded"
+          style={styles.inputPassword}
           placeholder={translations[language].password}
+          secureTextEntry={!showPassword}
           value={form.password}
           onChangeText={(t) => handleChange("password", t)}
-          secureTextEntry={!showPassword}
         />
         <TouchableOpacity
-          className="absolute right-3 top-3"
+          style={styles.showBtn}
           onPress={() => setShowPassword(!showPassword)}
         >
-          <Text className="text-blue-600 font-semibold">
+          <Text style={styles.showText}>
             {showPassword ? translations[language].hide : translations[language].show}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Role-Specific Fields */}
+      {/* Role Specific */}
       {role === "fisherman" && (
         <>
           <TextInput
-            className="border p-3 rounded mb-4"
+            style={styles.input}
             placeholder={translations[language].nationalId}
             value={form.nationalId}
             onChangeText={(t) => handleChange("nationalId", t)}
           />
           <TextInput
-            className="border p-3 rounded mb-4"
+            style={styles.input}
             placeholder={translations[language].boatName}
             value={form.boatName}
             onChangeText={(t) => handleChange("boatName", t)}
           />
           <TextInput
-            className="border p-3 rounded mb-4"
+            style={styles.input}
             placeholder={translations[language].dob}
             value={form.dob}
             onChangeText={(t) => handleChange("dob", t)}
           />
           <TextInput
-            className="border p-3 rounded mb-4"
+            style={styles.input}
             placeholder={translations[language].homeAddress}
             value={form.homeAddress}
             onChangeText={(t) => handleChange("homeAddress", t)}
@@ -203,19 +239,19 @@ export default function RoleRegisterScreen() {
       {role === "marine" && (
         <>
           <TextInput
-            className="border p-3 rounded mb-4"
+            style={styles.input}
             placeholder={translations[language].badgeNumber}
             value={form.badgeNumber}
             onChangeText={(t) => handleChange("badgeNumber", t)}
           />
           <TextInput
-            className="border p-3 rounded mb-4"
+            style={styles.input}
             placeholder={translations[language].unit}
             value={form.unit}
             onChangeText={(t) => handleChange("unit", t)}
           />
           <TextInput
-            className="border p-3 rounded mb-4"
+            style={styles.input}
             placeholder={translations[language].email}
             value={form.email}
             onChangeText={(t) => handleChange("email", t)}
@@ -227,13 +263,13 @@ export default function RoleRegisterScreen() {
       {role === "ngo" && (
         <>
           <TextInput
-            className="border p-3 rounded mb-4"
+            style={styles.input}
             placeholder={translations[language].organization}
             value={form.organization}
             onChangeText={(t) => handleChange("organization", t)}
           />
           <TextInput
-            className="border p-3 rounded mb-4"
+            style={styles.input}
             placeholder={translations[language].email}
             value={form.email}
             onChangeText={(t) => handleChange("email", t)}
@@ -242,15 +278,95 @@ export default function RoleRegisterScreen() {
         </>
       )}
 
-      {/* Submit */}
-      <TouchableOpacity
-        onPress={handleSubmit}
-        className="bg-blue-600 p-4 rounded-xl mt-6 items-center"
-      >
-        <Text className="text-white text-lg font-bold">
-          {translations[language].submit}
-        </Text>
+      <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+        <Text style={styles.submitText}>{translations[language].submit}</Text>
       </TouchableOpacity>
+
+      <View style={styles.accountContainer}>
+        <Text style={styles.accountText}>{translations[language].account}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.loginText}>{translations[language].login}</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#f8faff",
+    padding: 50,
+    paddingBottom: 40,
+  },
+  headingText: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#0000ff",
+    textAlign: "center",
+  },
+  descriptionText: {
+    fontSize: 16,
+    color: "#999999",
+    textAlign: "center",
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  input: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#c7c7d2",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  passwordContainer: {
+    position: "relative",
+    marginBottom: 15,
+  },
+  inputPassword: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#c7c7d2",
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 16,
+  },
+  showBtn: {
+    position: "absolute",
+    right: 15,
+    top: 12,
+  },
+  showText: {
+    color: "#007bff",
+    fontWeight: "600",
+  },
+  submitBtn: {
+    backgroundColor: "#0066cc",
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: "center",
+    marginTop: 15,
+  },
+  submitText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  accountContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  accountText: {
+    color: "#999999",
+    marginRight: 8,
+    fontSize: 14,
+  },
+  loginText: {
+    color: "#0066cc",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+});

@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
 import {
   View,
   Text,
   TextInput,
   Alert,
-  Platform,
   ScrollView,
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
@@ -18,14 +17,13 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { Magnetometer } from "expo-sensors";
 import { useNavigation } from "@react-navigation/native";
+
 const AUTH_BASE =
   "https://2b55f8fb-4fda-40b3-9a62-9282bf78e6c0-dev.e1-us-east-azure.choreoapis.dev/aquawatch/registration-service/v1.0";
 
-
 export default function TripRegistrationScreen() {
-
-
   const navigation = useNavigation();
+
   const [token, setToken] = useState(null);
   const [fishermanId, setFishermanId] = useState("");
   const [boats, setBoats] = useState([]);
@@ -34,26 +32,13 @@ export default function TripRegistrationScreen() {
   const [status, setStatus] = useState(false);
   const [members, setMembers] = useState([]);
   const [location, setLocation] = useState({
-    latitude: 7.256, // fallback
+    latitude: 7.256,
     longitude: 79.835,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   });
   const [heading, setHeading] = useState(0);
   const [loading, setLoading] = useState(false);
-
-//   const styles = StyleSheet.create({
-//   headingText: {
-//     fontSize: 18,
-//     fontWeight: "bold",
-//     marginTop: 10,
-//   },
-//   compass: {
-//     alignItems: "center",
-//     justifyContent: "center",
-//     marginTop: 20,
-//   },
-// });
 
   // Fetch auth data and current location
   useEffect(() => {
@@ -64,6 +49,8 @@ export default function TripRegistrationScreen() {
           const parsed = JSON.parse(storedAuth);
           setFishermanId(parsed.userId);
           setToken(parsed.token);
+        } else {
+          Alert.alert("Login Error", "Please log in again.");
         }
       } catch (err) {
         console.log("Error reading authData:", err);
@@ -75,41 +62,30 @@ export default function TripRegistrationScreen() {
     init();
   }, []);
 
-// Safe magnetometer subscription
-useEffect(() => {
-  let subscription;
-  let lastAngle = null; // keep track of last heading
+  // Magnetometer subscription
+  useEffect(() => {
+    let subscription;
+    let lastAngle = null;
 
-  const startMagnetometer = async () => {
-    try {
-      const available = await Magnetometer.isAvailableAsync();
-      if (!available) return;
-
-      subscription = Magnetometer.addListener((data) => {
-        const { x, y } = data;
+    const startMagnetometer = () => {
+      subscription = Magnetometer.addListener(({ x, y }) => {
         if (typeof x === "number" && typeof y === "number") {
           let angle = Math.atan2(y, x) * (180 / Math.PI);
           if (angle < 0) angle += 360;
-
-          // Only update if change > 2°
           if (lastAngle === null || Math.abs(angle - lastAngle) > 2) {
             setHeading(angle);
             lastAngle = angle;
           }
         }
       });
+      Magnetometer.setUpdateInterval(300);
+    };
 
-      Magnetometer.setUpdateInterval(300); // slower interval to reduce noise
-    } catch (err) {
-      console.log("Magnetometer error:", err);
-    }
-  };
-
-  startMagnetometer();
-  return () => subscription && subscription.remove();
-}, []);
-
-
+    startMagnetometer();
+    return () => {
+      if (subscription) subscription.remove();
+    };
+  }, []);
 
   // Fetch boats after fishermanId is set
   useEffect(() => {
@@ -131,8 +107,8 @@ useEffect(() => {
   // Get current location
   const getCurrentLocation = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (!permission.granted) {
         Alert.alert("Permission Denied", "Location permission is required.");
         return;
       }
@@ -162,7 +138,9 @@ useEffect(() => {
       return;
     }
 
-    const selectedBoatData = boats.find((b) => b._id === selectedBoat);
+    const selectedBoatData = boats.find(
+      (b) => String(b._id) === String(selectedBoat)
+    );
     if (!selectedBoatData) {
       setStatus(false);
       setMembers([]);
@@ -187,8 +165,6 @@ useEffect(() => {
 
   const handleSubmit = async () => {
     try {
-
-
       if (!selectedBoat) {
         Alert.alert("Please select a boat");
         return;
@@ -199,13 +175,12 @@ useEffect(() => {
         return;
       }
 
-      setLoading(true);
-
       if (!token) {
-  Alert.alert("Error", "Token not found. Please log in again.");
-  setLoading(false);
-  return;
-}
+        Alert.alert("Error", "Token not found. Please log in again.");
+        return;
+      }
+
+      setLoading(true);
 
       const data = {
         boat: selectedBoat,
@@ -229,19 +204,17 @@ useEffect(() => {
       );
 
       if (response.status === 201) {
-           Alert.alert("Success", "Trip registered successfully!", [
-    {
-      text: "OK",
-      onPress: () =>
-        navigation.replace("Fisherman", {
-          
-          language: "en", // set your default or fetch from AsyncStorage
-          token: token,
-          userId: fishermanId,
-          
-        }),
-    },
-  ]);
+        Alert.alert("Success", "Trip registered successfully!", [
+          {
+            text: "OK",
+            onPress: () =>
+              navigation.replace("Fisherman", {
+                language: "en",
+                token: token,
+                userId: fishermanId,
+              }),
+          },
+        ]);
         setSelectedBoat("");
         setNumberOfFisherman("");
         setMembers([]);
@@ -251,7 +224,10 @@ useEffect(() => {
       }
     } catch (error) {
       console.log("Error submitting trip:", error.response?.data || error.message);
-      Alert.alert("Error", error.response?.data?.message || "Something went wrong");
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Something went wrong"
+      );
     } finally {
       setLoading(false);
     }
@@ -262,34 +238,17 @@ useEffect(() => {
       contentContainerStyle={{
         padding: 15,
         backgroundColor: "#F7F7F7",
-        paddingTop: 50
+        paddingTop: 50,
       }}
     >
       {/* ---------- TRIP DETAILS CARD ---------- */}
-      <View
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderRadius: 12,
-          padding: 20,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          marginBottom: 20,
-          borderWidth: 2,          // <-- add this
-           borderColor: "#E5E7EB",
-        }}
-      >
-        <Text style={{fontFamily: "Poppins-Bold", fontWeight: "bold", fontSize: 18, marginBottom: 20 }}>
-          Trip Details
-        </Text>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Trip Details</Text>
 
-        <Text style={{ fontWeight: "500" }}>Select Boat</Text>
+        <Text style={styles.label}>Select Boat</Text>
         <Picker
           selectedValue={selectedBoat}
-          onValueChange={(val) => {
-            setSelectedBoat(val);
-          }}
+          onValueChange={(val) => setSelectedBoat(val)}
         >
           <Picker.Item label="-- Select a Boat --" value="" />
           {boats.map((boat) => (
@@ -297,87 +256,46 @@ useEffect(() => {
           ))}
         </Picker>
 
-        <Text style={{ marginTop: 10, fontWeight: "500" }}>
-          Number of Fishermen
-        </Text>
+        <Text style={styles.label}>Number of Fishermen</Text>
         <TextInput
           value={numberOfFisherman}
           onChangeText={checkCapacity}
           placeholder="Enter Number of Fishermen"
           keyboardType="numeric"
-          style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            borderRadius: 6,
-            padding: 8,
-            marginTop: 5,
-          }}
+          style={styles.input}
         />
 
         {status &&
           members.map((member, index) => (
             <View key={index} style={{ marginTop: 10 }}>
-              <Text style={{ fontWeight: "500" }}>
-                Fisherman {index + 1} ID
-              </Text>
+              <Text style={styles.label}>Fisherman {index + 1} ID</Text>
               <TextInput
                 value={member}
                 onChangeText={(text) => handleMemberChange(text, index)}
                 placeholder={`Enter ID for Fisherman ${index + 1}`}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  borderRadius: 6,
-                  padding: 8,
-                  marginTop: 5,
-                }}
+                style={styles.input}
               />
             </View>
           ))}
 
         <TouchableOpacity
-          style={{
-            backgroundColor: "#6366F1",
-            paddingVertical: 12,
-            borderRadius: 8,
-            alignItems: "center",
-            marginTop: 20,
-          }}
+          style={styles.button}
           onPress={handleSubmit}
           disabled={loading}
         >
           {loading && <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />}
-          <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>
+          <Text style={styles.buttonText}>
             {loading ? "Registering..." : "Register Trip"}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* ---------- MAP + COMPASS CARD ---------- */}
-      <View
-        style={{
-          backgroundColor: "white",
-          borderRadius: 12,
-          padding: 15,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          marginBottom: 30,
-            borderWidth: 2,         
-    borderColor: "#E5E7EB",
-        }}
-      >
-        <Text style={{ fontWeight: "bold", fontSize: 15, marginBottom: 10,textAlign : "center" ,color: "#1F2937" }}>
-          Current Location
-        </Text>
+      <View style={styles.card}>
+        <Text style={styles.cardSubtitle}>Current Location</Text>
 
         <MapView
-          style={{
-            height: 200,
-            borderRadius: 8,
-            marginBottom: 15,
-          }}
+          style={styles.map}
           region={location}
         >
           <Marker
@@ -393,35 +311,43 @@ useEffect(() => {
           />
         </MapView>
 
-        {/* COMPASS */}
-        <Text style={{ fontWeight: "bold", fontSize: 15, marginBottom: 10 ,textAlign : "center",color: "#1F2937" }}>
-          Compass & Heading
-        </Text>
-
-        <View
-          style={{
-            width: 200,
-            height: 200,
-            alignSelf: "center",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+        <Text style={styles.cardSubtitle}>Compass & Heading</Text>
+        <View style={styles.compassContainer}>
           <Image
             source={require("../assets/arrow.png")}
-            style={{
-              width: 200,
-              height: 200,
-              transform: [{ rotate: `${heading}deg` }],
-            }}
+            style={[styles.compassImage, { transform: [{ rotate: `${heading}deg` }] }]}
             resizeMode="contain"
           />
         </View>
-
-        <Text style={{ textAlign: "center", fontWeight: "bold",fontSize : 20 }}>
-          {heading.toFixed(0)}° N
+        <Text style={styles.headingText}>
+          {heading ? `${heading.toFixed(0)}° N` : "No Heading"}
         </Text>
       </View>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+  },
+  cardTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 20 },
+  cardSubtitle: { fontWeight: "bold", fontSize: 15, marginBottom: 10, textAlign: "center", color: "#1F2937" },
+  label: { fontWeight: "500", marginTop: 10 },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginTop: 5 },
+  button: { backgroundColor: "#6366F1", paddingVertical: 12, borderRadius: 8, alignItems: "center", marginTop: 20, flexDirection: "row", justifyContent: "center" },
+  buttonText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  map: { height: 200, borderRadius: 8, marginBottom: 15 },
+  compassContainer: { width: 200, height: 200, alignSelf: "center", justifyContent: "center", alignItems: "center" },
+  compassImage: { width: 200, height: 200 },
+  headingText: { textAlign: "center", fontWeight: "bold", fontSize: 20 },
+});

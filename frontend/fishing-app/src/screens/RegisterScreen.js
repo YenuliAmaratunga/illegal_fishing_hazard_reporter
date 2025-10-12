@@ -49,7 +49,7 @@ export default function RegisterScreen() {
 
       <TouchableOpacity
         onPress={() => goToForm("fisherman")}
-        className="bg-blue-500 rounded-2xl w-full py-8 mb-6 justify-center items-center"
+        className="bg-blue rounded-2xl w-full py-8 mb-6 justify-center items-center"
       >
         <Text className="text-xl font-semibold text-white text-center">
           {translations[language].fisherman}

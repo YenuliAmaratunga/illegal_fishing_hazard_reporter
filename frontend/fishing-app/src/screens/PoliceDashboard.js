@@ -240,7 +240,7 @@ export default function PoliceDashboard() {
 
 return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      {/* Header - Using your original */}
+      {/* Header */}
       <View className="px-4 pt-2 pb-3 flex-row items-center justify-between">
         <View>
           <Text className="text-2xl font-bold text-blue">Marine Police</Text>

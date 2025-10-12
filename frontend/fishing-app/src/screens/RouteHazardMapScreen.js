@@ -1,11 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
   Dimensions,
   ActivityIndicator,
-  Animated,
-  Easing,
   Alert,
 } from "react-native";
 import MapView, { Marker, Polyline, Polygon } from "react-native-maps";
@@ -42,12 +40,11 @@ const doesRouteCrossZone = (route, polygon) =>
 
 export default function RouteHazardMapScreen() {
   const [token, setToken] = useState(null);
-  const [userId, setUserId] = useState(null);
   const [hazards, setHazards] = useState([]);
   const [selectedHazard, setSelectedHazard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [routeCoords, setRouteCoords] = useState([]);
-  const pulseRefs = useRef({});
+  const mapRef = useRef(null);
 
   // ---------------- AUTH + FETCH ROUTE ----------------
   useEffect(() => {
@@ -62,15 +59,12 @@ export default function RouteHazardMapScreen() {
 
         const parsed = JSON.parse(storedAuth);
         setToken(parsed.token);
-        setUserId(parsed.userId);
 
-        // ✅ Correct endpoint path (matches backend)
         const res = await axios.get(`${TRIP_BASE}/api/Trip/latestTrip`, {
           headers: { Authorization: `Bearer ${parsed.token}` },
         });
 
-        // ✅ Backend returns { message, trip: { ... } }
-        if (!res.data || !res.data.trip || !res.data.trip.startingLocation) {
+        if (!res.data?.trip?.startingLocation) {
           Alert.alert("No trip found", "Please register a trip first.");
           setLoading(false);
           return;
@@ -78,13 +72,11 @@ export default function RouteHazardMapScreen() {
 
         const trip = res.data.trip;
         const startingLocation = trip.startingLocation;
-
-        // ✅ Compute a destination based on heading and distance
         const headingDeg = trip.heading ?? 0;
         const distanceKm = 15;
 
         const computeDestination = (lat, lon, heading, distanceKm) => {
-          const R = 6371; // Earth radius in km
+          const R = 6371;
           const brng = (heading * Math.PI) / 180;
           const lat1 = (lat * Math.PI) / 180;
           const lon1 = (lon * Math.PI) / 180;
@@ -114,15 +106,22 @@ export default function RouteHazardMapScreen() {
         );
 
         const route = [
-          {
-            latitude: startingLocation.latitude,
-            longitude: startingLocation.longitude,
-          },
+          { latitude: startingLocation.latitude, longitude: startingLocation.longitude },
           dest,
         ];
 
         setRouteCoords(route);
         await fetchHazards(route);
+
+        // Fit map to route
+        setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.fitToCoordinates(route, {
+              edgePadding: { top: 100, right: 50, bottom: 200, left: 50 },
+              animated: true,
+            });
+          }
+        }, 500);
       } catch (err) {
         console.error("Error initializing route:", err.response?.data || err.message);
         Alert.alert("Error", "Unable to load route data.");
@@ -137,95 +136,76 @@ export default function RouteHazardMapScreen() {
   // ---------------- FETCH HAZARD DATA ----------------
   const fetchHazards = async (route) => {
     try {
-      const { latitude, longitude } = route[0];
-      const res = await axios.get(
-        `${WEATHER_BASE}/forecast?lat=${latitude}&lon=${longitude}`,
-        { timeout: 10000 }
+      const numIntervals = 4;
+      const [start, end] = route;
+
+      const intervalPoints = Array.from({ length: numIntervals }, (_, i) => ({
+        latitude: start.latitude + ((end.latitude - start.latitude) * (i + 1)) / (numIntervals + 1),
+        longitude: start.longitude + ((end.longitude - start.longitude) * (i + 1)) / (numIntervals + 1),
+      }));
+
+      const results = await Promise.all(
+        intervalPoints.map((point) =>
+          axios
+            .get(`${WEATHER_BASE}/forecast?lat=${point.latitude}&lon=${point.longitude}`, { timeout: 10000 })
+            .then((res) => ({ point, data: res.data }))
+            .catch((err) => ({ point, error: err }))
+        )
       );
 
-      if (res.data.success && res.data.data) {
-        const forecast = res.data.data;
-        const weather = forecast.weather || {};
-        const marine = forecast.marine || {};
-        const hazardList = [];
+      const allHazards = [];
 
-        if (weather.windSpeed && weather.windSpeed > 2) {
-          hazardList.push({
-            id: "hazard-wind",
-            type: "storm",
-            lat: latitude,
-            lon: longitude,
-            severity: 5,
-            description: `Strong winds (${weather.windSpeed} km/h)`,
-          });
+      results.forEach(({ point, data, error }) => {
+        if (error) return;
+
+        if (data?.success && data.data) {
+          const forecast = data.data;
+          const weather = forecast.weather || {};
+          const marine = forecast.marine || {};
+
+          if (weather.windSpeed && weather.windSpeed > 5) {
+            allHazards.push({
+              id: `wind-${point.latitude.toFixed(4)}-${point.longitude.toFixed(4)}`,
+              type: "storm",
+              lat: point.latitude,
+              lon: point.longitude,
+              severity: 5,
+              description: `Strong winds (${weather.windSpeed} km/h)`,
+            });
+          }
+
+          if (marine.current?.wave_height && marine.current.wave_height > 2.5) {
+            allHazards.push({
+              id: `wave-${point.latitude.toFixed(4)}-${point.longitude.toFixed(4)}`,
+              type: "waves",
+              lat: point.latitude,
+              lon: point.longitude,
+              severity: 4,
+              description: `High waves (${marine.current.wave_height} m)`,
+            });
+          }
+
+          if (weather.conditions?.toLowerCase().includes("rain")) {
+            allHazards.push({
+              id: `rain-${point.latitude.toFixed(4)}-${point.longitude.toFixed(4)}`,
+              type: "rain",
+              lat: point.latitude,
+              lon: point.longitude,
+              severity: 3,
+              description: "Rainy conditions — visibility reduced.",
+            });
+          }
         }
+      });
 
-        if (marine.current?.wave_height && marine.current.wave_height > 2.5) {
-          hazardList.push({
-            id: "hazard-wave",
-            type: "waves",
-            lat: latitude,
-            lon: longitude,
-            severity: 4,
-            description: `High waves (${marine.current.wave_height} m)`,
-          });
-        }
-
-        if (weather.conditions && weather.conditions.toLowerCase().includes("rain")) {
-          hazardList.push({
-            id: "hazard-rain",
-            type: "rain",
-            lat: latitude,
-            lon: longitude,
-            severity: 3,
-            description: "Rainy conditions — visibility reduced.",
-          });
-        }
-
-        hazardList.forEach((h) => {
-          pulseRefs.current[h.id] = new Animated.Value(1);
-          animatePulse(h.id);
-        });
-
-        const minLat = Math.min(route[0].latitude, route[1].latitude);
-        const maxLat = Math.max(route[0].latitude, route[1].latitude);
-        const minLon = Math.min(route[0].longitude, route[1].longitude);
-        const maxLon = Math.max(route[0].longitude, route[1].longitude);
-
-        const hazardsAlongRoute = hazardList.filter(
-          (h) =>
-            h.lat >= minLat && h.lat <= maxLat && h.lon >= minLon && h.lon <= maxLon
-        );
-
-        setHazards(hazardsAlongRoute);
-      }
+      setHazards(allHazards);
     } catch (err) {
       console.error("Error fetching hazards:", err.message);
       setHazards([]);
     }
   };
 
-  // ---------------- ANIMATION ----------------
-  const animatePulse = (id) => {
-    const anim = pulseRefs.current[id];
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(anim, {
-          toValue: 1.4,
-          duration: 1200,
-          easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 1200,
-          easing: Easing.in(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  };
-
+  // ---------------- RISK ----------------
   const crossesRestrictedZone = zones.some((zone) =>
     doesRouteCrossZone(routeCoords, zone.coordinates)
   );
@@ -241,18 +221,13 @@ export default function RouteHazardMapScreen() {
 
   const risk = computeRisk();
 
-  // ---------------- LOADING STATE ----------------
+  // ---------------- LOADING ----------------
   if (loading)
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <Animatable.View
-          animation="pulse"
-          iterationCount="infinite"
-          duration={1500}
-        >
+        <Animatable.View animation="pulse" iterationCount="infinite" duration={1500}>
           <MaterialCommunityIcons name="map-search-outline" size={70} color="#3C467B" />
         </Animatable.View>
-
         <Animatable.Text
           animation="fadeIn"
           iterationCount="infinite"
@@ -261,12 +236,11 @@ export default function RouteHazardMapScreen() {
         >
           Fetching route & hazard data...
         </Animatable.Text>
-
         <ActivityIndicator size="large" color="#636CCB" style={{ marginTop: 10 }} />
       </View>
     );
 
-  // ---------------- MAP UI ----------------
+  // ---------------- MAP ----------------
   const getHazardVisuals = (type) => {
     switch (type) {
       case "storm":
@@ -283,22 +257,15 @@ export default function RouteHazardMapScreen() {
   return (
     <View className="flex-1 bg-white">
       <MapView
-        style={{
-          width: Dimensions.get("window").width,
-          height: Dimensions.get("window").height,
-        }}
+        ref={mapRef}
+        style={{ width: Dimensions.get("window").width, height: Dimensions.get("window").height }}
         initialRegion={{
-          latitude:
-            (routeCoords[0]?.latitude ?? 6.9) +
-            ((routeCoords[1]?.latitude ?? 6.95) - (routeCoords[0]?.latitude ?? 6.9)) / 2,
-          longitude:
-            (routeCoords[0]?.longitude ?? 79.9) +
-            ((routeCoords[1]?.longitude ?? 79.95) - (routeCoords[0]?.longitude ?? 79.9)) / 2,
+          latitude: 6.925,
+          longitude: 79.925,
           latitudeDelta: 0.4,
           longitudeDelta: 0.4,
         }}
       >
-        {/* ✅ Only render markers/polyline when we have route points */}
         {routeCoords.length === 2 && (
           <>
             <Marker coordinate={routeCoords[0]} title="Departure" pinColor="blue" />
@@ -307,7 +274,6 @@ export default function RouteHazardMapScreen() {
           </>
         )}
 
-        {/* Protected zones */}
         {zones.map((zone) => (
           <Polygon
             key={zone.id}
@@ -318,43 +284,34 @@ export default function RouteHazardMapScreen() {
           />
         ))}
 
-        {/* Hazards */}
         {hazards.map((h) => {
           const visuals = getHazardVisuals(h.type);
-          const scale = pulseRefs.current[h.id] || new Animated.Value(1);
           return (
             <Marker
               key={h.id}
               coordinate={{ latitude: h.lat, longitude: h.lon }}
               onPress={() => setSelectedHazard(h)}
             >
-              <Animated.View
-                className="items-center justify-center"
-                style={{ transform: [{ scale }] }}
-              >
+              <View className="items-center justify-center">
                 <View className="w-8 h-8 rounded-full bg-red-200 opacity-25 absolute" />
                 <View className="w-8 h-8 rounded-full bg-white items-center justify-center shadow">
-                  <MaterialCommunityIcons
-                    name={visuals.icon}
-                    size={20}
-                    color={visuals.color}
-                  />
+                  <MaterialCommunityIcons name={visuals.icon} size={20} color={visuals.color} />
                 </View>
-              </Animated.View>
+              </View>
             </Marker>
           );
         })}
       </MapView>
 
-      {/* Trip risk summary */}
-      <View className="absolute bottom-32 w-full px-6">
+      {/* Trip Risk Summary moved slightly lower */}
+      <View className="absolute bottom-20 w-full px-6">
         <View className="bg-white rounded-2xl shadow-md p-4 border border-blue-100 items-center">
           <Text className="text-blue-700 font-bold text-base">Trip Risk Summary</Text>
           <Text className={`text-2xl font-bold mt-1 ${risk.color}`}>{risk.label}</Text>
         </View>
       </View>
 
-      {/* Hazard popup */}
+      {/* Hazard Details */}
       {selectedHazard && (
         <View className="absolute bottom-52 w-full px-5">
           <View className="bg-white rounded-2xl p-4 shadow-lg border border-blue-100">
@@ -366,17 +323,12 @@ export default function RouteHazardMapScreen() {
                   ? "🌊 High Wave Area"
                   : "🌧️ Rainy Zone"}
               </Text>
-              <Text
-                className="text-gray-500 text-lg"
-                onPress={() => setSelectedHazard(null)}
-              >
+              <Text className="text-gray-500 text-lg" onPress={() => setSelectedHazard(null)}>
                 ✕
               </Text>
             </View>
             <Text className="text-gray-700 mb-3">{selectedHazard.description}</Text>
-            <Text className="text-gray-600 font-semibold">
-              Severity: {selectedHazard.severity}/5
-            </Text>
+            <Text className="text-gray-600 font-semibold">Severity: {selectedHazard.severity}/5</Text>
           </View>
         </View>
       )}

@@ -92,7 +92,7 @@ export default function PoliceDashboard() {
           const source = row.latestLocation || row.latest || row;
           return {
             boatId: row._id || row.boatId || source?.boatId,
-            name: row.name || row.boatName || `Boat ${row._id || row.boatId || "?"}`,
+            name: row.name || row.boatName || `${row._id || row.boatId || "?"}`,
             lat: source?.latitude ?? row.latitude,
             lng: source?.longitude ?? row.longitude,
             status: (source?.status ?? row.status) || "active",
@@ -320,7 +320,7 @@ return (
                         );
                       }
                       setFocusedBoat({
-                        name: `Boat ${item.boatId}`,
+                        name: `${item.boatId}`,
                         lat: item.lat,
                         lng: item.lng,
                         status: "sos",
@@ -334,7 +334,7 @@ return (
                     </View>
                     <View className="flex-1">
                       <Text className="text-darkBlue font-heading font-bold text-xl">
-                        Boat {item.boatId}
+                        {item.boatId}
                       </Text>
                       <Text className="text-red-600 font-sans font-semibold text-lg">EMERGENCY SOS</Text>
                     </View>

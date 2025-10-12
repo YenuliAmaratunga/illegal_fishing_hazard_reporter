@@ -38,6 +38,15 @@ const isPointInPolygon = (point, polygon) => {
 const doesRouteCrossZone = (route, polygon) =>
   route.some((p) => isPointInPolygon(p, polygon));
 
+// Compute approximate center of polygon
+const getPolygonCenter = (coordinates) => {
+  const lats = coordinates.map((c) => c.latitude);
+  const lons = coordinates.map((c) => c.longitude);
+  const lat = (Math.min(...lats) + Math.max(...lats)) / 2;
+  const lon = (Math.min(...lons) + Math.max(...lons)) / 2;
+  return { latitude: lat, longitude: lon };
+};
+
 export default function RouteHazardMapScreen() {
   const [token, setToken] = useState(null);
   const [hazards, setHazards] = useState([]);
@@ -113,7 +122,6 @@ export default function RouteHazardMapScreen() {
         setRouteCoords(route);
         await fetchHazards(route);
 
-        // Fit map to route
         setTimeout(() => {
           if (mapRef.current) {
             mapRef.current.fitToCoordinates(route, {
@@ -224,7 +232,7 @@ export default function RouteHazardMapScreen() {
   // ---------------- LOADING ----------------
   if (loading)
     return (
-      <View className="flex-1 justify-center items-center bg-white">
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "white" }}>
         <Animatable.View animation="pulse" iterationCount="infinite" duration={1500}>
           <MaterialCommunityIcons name="map-search-outline" size={70} color="#3C467B" />
         </Animatable.View>
@@ -232,7 +240,7 @@ export default function RouteHazardMapScreen() {
           animation="fadeIn"
           iterationCount="infinite"
           duration={2000}
-          className="text-blue mt-3 font-semibold text-lg"
+          style={{ color: "#3C467B", marginTop: 12, fontWeight: "600", fontSize: 18 }}
         >
           Fetching route & hazard data...
         </Animatable.Text>
@@ -255,7 +263,7 @@ export default function RouteHazardMapScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <MapView
         ref={mapRef}
         style={{ width: Dimensions.get("window").width, height: Dimensions.get("window").height }}
@@ -266,6 +274,7 @@ export default function RouteHazardMapScreen() {
           longitudeDelta: 0.4,
         }}
       >
+        {/* Route */}
         {routeCoords.length === 2 && (
           <>
             <Marker coordinate={routeCoords[0]} title="Departure" pinColor="blue" />
@@ -274,6 +283,7 @@ export default function RouteHazardMapScreen() {
           </>
         )}
 
+        {/* Marine Zones */}
         {zones.map((zone) => (
           <Polygon
             key={zone.id}
@@ -284,6 +294,40 @@ export default function RouteHazardMapScreen() {
           />
         ))}
 
+        {/* MPA Labels */}
+        {zones.map((zone) => {
+          const center = getPolygonCenter(zone.coordinates);
+          return (
+            <Marker
+              key={`${zone.id}-label`}
+              coordinate={center}
+              tracksViewChanges={false}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View
+                style={{
+                  backgroundColor: "white",
+                  paddingHorizontal: 6,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: "#3C467B",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 1,
+                  elevation: 2,
+                }}
+              >
+                <Text style={{ color: "#3C467B", fontSize: 12, fontWeight: "bold" }}>
+                  {zone.name}
+                </Text>
+              </View>
+            </Marker>
+          );
+        })}
+
+        {/* Hazards */}
         {hazards.map((h) => {
           const visuals = getHazardVisuals(h.type);
           return (
@@ -292,9 +336,27 @@ export default function RouteHazardMapScreen() {
               coordinate={{ latitude: h.lat, longitude: h.lon }}
               onPress={() => setSelectedHazard(h)}
             >
-              <View className="items-center justify-center">
-                <View className="w-8 h-8 rounded-full bg-red-200 opacity-25 absolute" />
-                <View className="w-8 h-8 rounded-full bg-white items-center justify-center shadow">
+              <View style={{ alignItems: "center", justifyContent: "center" }}>
+                <View style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: "rgba(255,0,0,0.15)",
+                  position: "absolute"
+                }} />
+                <View style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: "white",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 1,
+                  elevation: 2,
+                }}>
                   <MaterialCommunityIcons name={visuals.icon} size={20} color={visuals.color} />
                 </View>
               </View>
@@ -303,45 +365,90 @@ export default function RouteHazardMapScreen() {
         })}
       </MapView>
 
-      {/* Trip Risk Summary moved slightly lower */}
-      <View className="absolute bottom-20 w-full px-6">
-        <View className="bg-white rounded-2xl shadow-md p-4 border border-blue-100 items-center">
-          <Text className="text-blue-700 font-bold text-base">Trip Risk Summary</Text>
-          <Text className={`text-2xl font-bold mt-1 ${risk.color}`}>{risk.label}</Text>
+      {/* Trip Risk Summary */}
+      <View style={{
+        position: "absolute",
+        bottom: 20,
+        width: "100%",
+        paddingHorizontal: 24,
+      }}>
+        <View style={{
+          backgroundColor: "white",
+          borderRadius: 20,
+          padding: 16,
+          borderWidth: 1,
+          borderColor: "#D6DBF7",
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          shadowRadius: 1,
+          elevation: 3,
+        }}>
+          <Text style={{ color: "#3C467B", fontWeight: "bold", fontSize: 16 }}>Trip Risk Summary</Text>
+          <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 4, color: risk.color.includes("red") ? "red" : risk.color.includes("yellow") ? "orange" : "green" }}>
+            {risk.label}
+          </Text>
         </View>
       </View>
 
       {/* Hazard Details */}
       {selectedHazard && (
-        <View className="absolute bottom-52 w-full px-5">
-          <View className="bg-white rounded-2xl p-4 shadow-lg border border-blue-100">
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="font-bold text-lg text-gray-800">
+        <View style={{
+          position: "absolute",
+          bottom: 160,
+          width: "100%",
+          paddingHorizontal: 20,
+        }}>
+          <View style={{
+            backgroundColor: "white",
+            borderRadius: 20,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: "#D6DBF7",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 2,
+            elevation: 4,
+          }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <Text style={{ fontWeight: "bold", fontSize: 18, color: "#4B5563" }}>
                 {selectedHazard.type === "storm"
                   ? "⚡ Storm Zone"
                   : selectedHazard.type === "waves"
                   ? "🌊 High Wave Area"
                   : "🌧️ Rainy Zone"}
               </Text>
-              <Text className="text-gray-500 text-lg" onPress={() => setSelectedHazard(null)}>
-                ✕
-              </Text>
+              <Text style={{ fontSize: 18, color: "#6B7280" }} onPress={() => setSelectedHazard(null)}>✕</Text>
             </View>
-            <Text className="text-gray-700 mb-3">{selectedHazard.description}</Text>
-            <Text className="text-gray-600 font-semibold">Severity: {selectedHazard.severity}/5</Text>
+            <Text style={{ color: "#4B5563", marginBottom: 8 }}>{selectedHazard.description}</Text>
+            <Text style={{ color: "#374151", fontWeight: "600" }}>Severity: {selectedHazard.severity}/5</Text>
           </View>
         </View>
       )}
 
       {/* Legend */}
-      <View className="absolute top-14 right-4 bg-white/80 p-2 rounded-lg shadow">
-        <View className="flex-row items-center mb-1">
-          <View className="w-4 h-4 bg-[#5C33CF]/40 border border-[#3C0D99] mr-2" />
-          <Text className="text-xs">Marine Protected Zone</Text>
+      <View style={{
+        position: "absolute",
+        top: 56,
+        right: 16,
+        backgroundColor: "rgba(255,255,255,0.8)",
+        padding: 8,
+        borderRadius: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 1,
+        elevation: 3,
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+          <View style={{ width: 16, height: 16, backgroundColor: "rgba(92,51,207,0.25)", borderWidth: 1, borderColor: "#3C0D99", marginRight: 4 }} />
+          <Text style={{ fontSize: 12 }}>Marine Protected Zone</Text>
         </View>
-        <View className="flex-row items-center">
-          <View className="w-4 h-4 bg-red-200 border border-red-500 mr-2" />
-          <Text className="text-xs">Weather Hazard</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: 16, height: 16, backgroundColor: "rgba(255,0,0,0.15)", borderWidth: 1, borderColor: "red", marginRight: 4 }} />
+          <Text style={{ fontSize: 12 }}>Weather Hazard</Text>
         </View>
       </View>
     </View>

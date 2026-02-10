@@ -1,0 +1,182 @@
+[
+  {
+    "id": "bar_reef",
+    "name": "Bar Reef Marine Sanctuary",
+    "coordinates": [
+      { "latitude": 8.350, "longitude": 79.695 },
+      { "latitude": 8.365, "longitude": 79.710 },
+      { "latitude": 8.355, "longitude": 79.725 },
+      { "latitude": 8.340, "longitude": 79.710 }
+    ],
+    "district": "Puttalam",
+    "description": "One of Sri Lanka’s largest coral reefs, vital for biodiversity. Fishing restricted to protect reef species."
+  },
+  {
+    "id": "hikkaduwa",
+    "name": "Hikkaduwa Marine National Park",
+    "coordinates": [
+      { "latitude": 6.133, "longitude": 80.095 },
+      { "latitude": 6.140, "longitude": 80.105 },
+      { "latitude": 6.130, "longitude": 80.115 },
+      { "latitude": 6.125, "longitude": 80.105 }
+    ],
+    "district": "Galle",
+    "description": "Coral sanctuary and popular tourist reef. Fishing and anchoring prohibited inside park boundaries."
+  },
+  {
+    "id": "pigeon_island",
+    "name": "Pigeon Island National Park",
+    "coordinates": [
+      { "latitude": 8.726, "longitude": 81.183 },
+      { "latitude": 8.732, "longitude": 81.195 },
+      { "latitude": 8.720, "longitude": 81.200 },
+      { "latitude": 8.715, "longitude": 81.187 }
+    ],
+    "district": "Trincomalee",
+    "description": "Located off Nilaveli coast; nesting grounds for rock pigeons and coral habitat for reef fish."
+  },
+  {
+    "id": "kayankerni",
+    "name": "Kayankerni Reef Marine Sanctuary",
+    "coordinates": [
+      { "latitude": 7.930, "longitude": 81.600 },
+      { "latitude": 7.940, "longitude": 81.615 },
+      { "latitude": 7.920, "longitude": 81.620 },
+      { "latitude": 7.910, "longitude": 81.605 }
+    ],
+    "district": "Batticaloa",
+    "description": "Coral reef ecosystem declared as sanctuary in 2011. Coral collection and destructive fishing banned."
+  },
+  {
+    "id": "rumassala",
+    "name": "Rumassala Marine Sanctuary",
+    "coordinates": [
+      { "latitude": 6.010, "longitude": 80.250 },
+      { "latitude": 6.020, "longitude": 80.260 },
+      { "latitude": 6.010, "longitude": 80.270 },
+      { "latitude": 6.000, "longitude": 80.260 }
+    ],
+    "district": "Galle",
+    "description": "Marine habitat near Unawatuna famous for coral and mythical Hanuman hill. Fishing restricted."
+  },
+  {
+    "id": "mirissa",
+    "name": "Mirissa Marine Protected Area",
+    "coordinates": [
+      { "latitude": 5.945, "longitude": 80.450 },
+      { "latitude": 5.950, "longitude": 80.460 },
+      { "latitude": 5.940, "longitude": 80.470 },
+      { "latitude": 5.935, "longitude": 80.460 }
+    ],
+    "district": "Matara",
+    "description": "Proposed protected area to safeguard whale and dolphin habitats in the southern coast."
+  },
+   {
+    "id": "adams_bridge",
+    "name": "Adam's Bridge National Park",
+    "coordinates": [
+      { "latitude": 9.076, "longitude": 79.623 },
+      { "latitude": 9.076, "longitude": 79.633 },
+      { "latitude": 9.066, "longitude": 79.633 },
+      { "latitude": 9.066, "longitude": 79.623 }
+    ],
+    "district": "Mannar",
+    "description": "Marine National Park protecting seagrass beds and sand shoals linking Sri Lanka and India. Established in 2015.[1]"
+  },
+  {
+    "id": "kuda_ravana",
+    "name": "Kuda Ravana Maha Ravana Sanctuary",
+    "coordinates": [
+      { "latitude": 6.412, "longitude": 81.725 },
+      { "latitude": 6.412, "longitude": 81.735 },
+      { "latitude": 6.402, "longitude": 81.735 },
+      { "latitude": 6.402, "longitude": 81.725 }
+    ],
+    "district": "Ampara",
+    "description": "Offshore marine sanctuary protecting the Great Basses and Little Basses reefs, vital for deep coral systems and pelagic species. Declared in 2019.[5, 2]"
+  },
+  {
+    "id": "great_sober",
+    "name": "Great Sober Island Sanctuary",
+    "coordinates": [
+      { "latitude": 8.538, "longitude": 81.195 },
+      { "latitude": 8.538, "longitude": 81.205 },
+      { "latitude": 8.528, "longitude": 81.205 },
+      { "latitude": 8.528, "longitude": 81.195 }
+    ],
+    "district": "Trincomalee",
+    "description": "Coastal island sanctuary within Trincomalee Bay, historically a military post and now protecting coastal island ecosystems. Established in 1963.[5, 3]"
+  },
+  {
+    "id": "little_sober",
+    "name": "Little Sober Island Sanctuary",
+    "coordinates": [
+      { "latitude": 8.535, "longitude": 81.198 },
+      { "latitude": 8.535, "longitude": 81.208 },
+      { "latitude": 8.525, "longitude": 81.208 },
+      { "latitude": 8.525, "longitude": 81.198 }
+    ],
+    "district": "Trincomalee",
+    "description": "Small island sanctuary adjacent to Great Sober Island in Trincomalee Bay, part of the 1963 sanctuary declaration.[5, 6]"
+  },
+  {
+    "id": "muthurajawela",
+    "name": "Muthurajawela Sanctuary",
+    "coordinates": [
+      { "latitude": 7.055, "longitude": 79.912 },
+      { "latitude": 7.055, "longitude": 79.922 },
+      { "latitude": 7.045, "longitude": 79.922 },
+      { "latitude": 7.045, "longitude": 79.912 }
+    ],
+    "district": "Gampaha",
+    "description": "Wetland sanctuary protecting Sri Lanka’s largest saline coastal peat bog, integrated with the Negombo lagoon ecosystem. Declared in 1996.[4, 7]"
+  },
+  {
+    "id": "nayaru",
+    "name": "Nayaru Nature Reserve",
+    "coordinates": [
+      { "latitude": 9.172, "longitude": 80.845 },
+      { "latitude": 9.172, "longitude": 80.855 },
+      { "latitude": 9.162, "longitude": 80.855 },
+      { "latitude": 9.162, "longitude": 80.845 }
+    ],
+    "district": "Mullaitivu",
+    "description": "Nature Reserve established in 2017 to protect a lagoon, wetland, and mangroves on the East Coast, providing habitat for migratory birds. Contains approximately 25% marine habitats.[5]"
+  },
+  {
+    "id": "nandikadal",
+    "name": "Nandikadal Nature Reserve",
+    "coordinates": [
+      { "latitude": 9.238, "longitude": 80.778 },
+      { "latitude": 9.238, "longitude": 80.788 },
+      { "latitude": 9.228, "longitude": 80.788 },
+      { "latitude": 9.228, "longitude": 80.778 }
+    ],
+    "district": "Mullaitivu",
+    "description": "Nature Reserve protecting a lagoon ecosystem, known as a critical feeding and roosting ground for migratory and resident birds. Established in 2017.[5]"
+  },
+  {
+    "id": "parititivu",
+    "name": "Parititivu Island Sanctuary",
+    "coordinates": [
+      { "latitude": 9.755, "longitude": 79.725 },
+      { "latitude": 9.755, "longitude": 79.735 },
+      { "latitude": 9.745, "longitude": 79.735 },
+      { "latitude": 9.745, "longitude": 79.725 }
+    ],
+    "district": "Jaffna",
+    "description": "Island Sanctuary (97.1 ha) established in 1973 protecting fringing coral reefs, seagrass, and subtidal reefs off the Jaffna Peninsula.[5]"
+  },
+  {
+    "id": "wedithalathivu",
+    "name": "Wedithalathivu Nature Reserve",
+    "coordinates": [
+      { "latitude": 9.075, "longitude": 79.862 },
+      { "latitude": 9.075, "longitude": 79.872 },
+      { "latitude": 9.065, "longitude": 79.872 },
+      { "latitude": 9.065, "longitude": 79.862 }
+    ],
+    "district": "Mannar",
+    "description": "Nature Reserve on the west coast comprising brackish and marine habitats, including corals, mangroves, and seagrass meadows.[5, 8]"
+  }
+]
